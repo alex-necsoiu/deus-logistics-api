@@ -1,0 +1,73 @@
+{
+  "version": "1",
+
+  "extends": [
+    "./system_prompt.md"
+  ],
+
+  "behavior": {
+    "linters": [
+      "must follow ARCHITECTURE.md exactly — no deviation",
+      "must follow .copilot/system_prompt.md",
+      "must ask clarifying questions before assuming",
+      "never change architecture or stack unless explicitly approved",
+
+      "must write tests FIRST before production code (TDD)",
+      "use table-driven tests and mockgen",
+      "must include GoDoc comments for every function",
+      "must document error cases, security implications, and tracing",
+
+      "must show full file paths for every file created/modified",
+      "must provide branch + conventional commit messages",
+      "must update README task table when completing steps",
+
+      "domain code MUST NOT import transport or infrastructure packages",
+      "no business logic in handlers",
+      "sqlc is the ONLY data access layer — no raw SQL in code",
+      "must never expose sqlc structs in API responses",
+      "Gin ONLY for HTTP, gRPC ONLY for internal RPC",
+      "Argon2id ONLY for password hashing",
+      "Vault placeholders for all secrets — no real credentials",
+      "must generate Makefile targets, migrations, OTEL hooks"
+    ],
+
+    "mustUsePatterns": [
+      "sqlc generate",
+      "go test",
+      "mockgen",
+      "Argon2id",
+      "OpenTelemetry",
+      "Gin",
+      "gRPC"
+    ],
+
+    "bannedPatterns": [
+      "db.Query(",
+      "db.Exec(",
+      "panic(",
+      "fmt.Println(",
+      "bcrypt",
+      "md5",
+      "sha1",
+      "password =",
+      ":= context.TODO()"
+    ]
+  },
+
+  "patchRules": {
+    "require": [
+      "branch name for each change",
+      "conventional commit message",
+      "file map with full paths",
+      "tests included BEFORE code",
+      "README task list update when tasks complete",
+      "commands to run and expected output"
+    ]
+  },
+
+  "prompts": {
+    "initialMessage": "Load and follow ARCHITECTURE.md and .copilot/system_prompt.md. Confirm by listing 10 mandatory rules.",
+    "resetCommand": "Reset. Re-read ARCHITECTURE.md and .copilot/system_prompt.md and restate the 10 rules before continuing.",
+    "onDeviation": "This violates Pandora architecture. Re-read ARCHITECTURE.md and .copilot/system_prompt.md and regenerate correctly."
+  }
+}
