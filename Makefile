@@ -63,6 +63,8 @@ TEST_COVERAGE_HTML := coverage.html
 	install-tools \
 	generate \
 	sqlc \
+	swagger \
+	deps \
 	fmt fmt-check \
 	vet \
 	lint \
@@ -85,10 +87,16 @@ help:
 	@echo "╚════════════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "┌─ Core Development ─────────────────────────────────────────────────┐"
+	@echo "│ make deps               Install required CLI tools (swag, etc)    │"
 	@echo "│ make install-tools      Install sqlc, migrate, mockgen             │"
 	@echo "│ make build              Build the API binary (with version info)   │"
 	@echo "│ make run                Run the API locally (requires postgres)    │"
 	@echo "│ make generate           Run go generate ./... (mockgen, etc)       │"
+	@echo "└────────────────────────────────────────────────────────────────────┘"
+	@echo ""
+	@echo "┌─ Documentation ────────────────────────────────────────────────────┐"
+	@echo "│ make swagger            Regenerate Swagger docs from annotations   │"
+	@echo "│                         Visit: http://localhost:8080/swagger/      │"
 	@echo "└────────────────────────────────────────────────────────────────────┘"
 	@echo ""
 	@echo "┌─ Code Quality ─────────────────────────────────────────────────────┐"
@@ -148,7 +156,26 @@ install-tools:
 	@echo "✅ All tools installed successfully!"
 
 # =============================================================================
-# 🔧 CODE GENERATION — Generate code from directives and SQL
+# � SWAGGER — Generate OpenAPI documentation
+# =============================================================================
+
+deps:
+	@echo "📥 Installing Swaggo CLI..."
+	@command -v swag >/dev/null 2>&1 || { \
+		echo "   • Installing swag..."; \
+		$(GO) install github.com/swaggo/swag/cmd/swag@latest; \
+	}
+	@echo "✅ Swaggo CLI installed!"
+
+swagger: deps
+	@echo "📚 Generating Swagger documentation from annotations..."
+	swag init -g cmd/api/main.go
+	@echo "✅ Swagger docs generated!"
+	@echo "   📍 Swagger UI: http://localhost:8080/swagger/index.html"
+	@echo "   📄 Specification: docs/swagger.json"
+
+# =============================================================================
+# �🔧 CODE GENERATION — Generate code from directives and SQL
 # =============================================================================
 
 generate:

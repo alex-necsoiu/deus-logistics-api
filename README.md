@@ -247,7 +247,51 @@ Expected output:
 
 ---
 
-## 📡 API Reference
+## � API Documentation
+
+### Swagger UI (Interactive)
+
+Once the API is running, access the interactive Swagger UI documentation:
+
+🌐 **[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)**
+
+The Swagger UI enables you to:
+- Browse all endpoints with full documentation
+- View request/response schemas with examples
+- Test endpoints directly from the browser
+- Download API specification (JSON/YAML)
+
+### Generate Documentation Locally
+
+Swagger documentation is generated from Go code annotations using **Swaggo**. To regenerate after modifying handlers or DTOs:
+
+```bash
+# Using Make (recommended)
+make swagger
+
+# Or directly
+swag init -g cmd/api/main.go
+```
+
+This updates:
+- `docs/docs.go` - Embedded documentation (auto-imported in main.go)
+- `docs/swagger.json` - OpenAPI 3.0 specification (JSON)
+- `docs/swagger.yaml` - OpenAPI 3.0 specification (YAML)
+
+### Documentation Format
+
+All endpoints are documented with:
+- **Summary** - Short operation description
+- **Parameters** - Request payload with validation rules
+- **Responses** - Success responses with example data
+- **Errors** - Possible error codes and messages
+- **Examples** - Realistic request/response examples
+
+For detailed annotation reference, see [SWAGGER.md](SWAGGER.md).
+
+---
+
+## �📡 API Reference
 
 ### Endpoints Summary
 
