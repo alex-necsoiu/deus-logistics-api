@@ -18,10 +18,12 @@ type VesselService struct {
 // NewVesselService creates a new vessel service with the given repository.
 //
 // Inputs:
-//   repo - vessel repository implementation (must not be nil)
+//
+//	repo - vessel repository implementation (must not be nil)
 //
 // Returns:
-//   *VesselService with initialized repository
+//
+//	*VesselService with initialized repository
 func NewVesselService(repo vessel.Repository) *VesselService {
 	return &VesselService{repo: repo}
 }
@@ -29,12 +31,14 @@ func NewVesselService(repo vessel.Repository) *VesselService {
 // CreateVessel registers a new vessel in the system.
 //
 // Inputs:
-//   ctx   - request context for cancellation and tracing
-//   input - vessel details (Name required, Capacity must be > 0)
+//
+//	ctx   - request context for cancellation and tracing
+//	input - vessel details (Name required, Capacity must be > 0)
 //
 // Returns:
-//   *Vessel with generated UUID on success
-//   ErrInvalidInput if Name is empty or Capacity <= 0
+//
+//	*Vessel with generated UUID on success
+//	ErrInvalidInput if Name is empty or Capacity <= 0
 //
 // Side effects:
 //   - DB write to vessels table
@@ -51,13 +55,15 @@ func (s *VesselService) CreateVessel(ctx context.Context, input vessel.CreateVes
 // GetVessel retrieves a vessel by ID.
 //
 // Inputs:
-//   ctx - request context for cancellation and tracing
-//   id  - UUID of the vessel (must not be nil)
+//
+//	ctx - request context for cancellation and tracing
+//	id  - UUID of the vessel (must not be nil)
 //
 // Returns:
-//   *Vessel on success
-//   ErrInvalidInput if id is nil
-//   ErrNotFound if vessel does not exist
+//
+//	*Vessel on success
+//	ErrInvalidInput if id is nil
+//	ErrNotFound if vessel does not exist
 //
 // Side effects:
 //   - DB read from vessels table
@@ -75,11 +81,13 @@ func (s *VesselService) GetVessel(ctx context.Context, id uuid.UUID) (*vessel.Ve
 // ListVessels retrieves all vessels in the system.
 //
 // Inputs:
-//   ctx - request context for cancellation and tracing
+//
+//	ctx - request context for cancellation and tracing
 //
 // Returns:
-//   []*Vessel sorted by creation timestamp on success
-//   Empty slice if no vessels exist
+//
+//	[]*Vessel sorted by creation timestamp on success
+//	Empty slice if no vessels exist
 //
 // Side effects:
 //   - DB read from vessels table
@@ -97,14 +105,16 @@ func (s *VesselService) ListVessels(ctx context.Context) ([]*vessel.Vessel, erro
 // UpdateVesselLocation updates the current location of a vessel.
 //
 // Inputs:
-//   ctx      - request context for cancellation and tracing
-//   id       - UUID of the vessel (must not be nil)
-//   location - new location string (must not be empty)
+//
+//	ctx      - request context for cancellation and tracing
+//	id       - UUID of the vessel (must not be nil)
+//	location - new location string (must not be empty)
 //
 // Returns:
-//   *Vessel with updated location on success
-//   ErrInvalidInput if id is nil or location is empty
-//   ErrNotFound if vessel does not exist
+//
+//	*Vessel with updated location on success
+//	ErrInvalidInput if id is nil or location is empty
+//	ErrNotFound if vessel does not exist
 //
 // Side effects:
 //   - DB update to vessels table (current_location column)
@@ -124,14 +134,16 @@ func (s *VesselService) UpdateVesselLocation(ctx context.Context, id uuid.UUID, 
 // UpdateVesselCapacity updates the cargo capacity of a vessel.
 //
 // Inputs:
-//   ctx      - request context for cancellation and tracing
-//   id       - UUID of the vessel (must not be nil)
-//   capacity - new capacity in units (must be > 0)
+//
+//	ctx      - request context for cancellation and tracing
+//	id       - UUID of the vessel (must not be nil)
+//	capacity - new capacity in units (must be > 0)
 //
 // Returns:
-//   *Vessel with updated capacity on success
-//   ErrInvalidInput if id is nil or capacity <= 0
-//   ErrNotFound if vessel does not exist
+//
+//	*Vessel with updated capacity on success
+//	ErrInvalidInput if id is nil or capacity <= 0
+//	ErrNotFound if vessel does not exist
 //
 // Side effects:
 //   - DB update to vessels table (capacity column)

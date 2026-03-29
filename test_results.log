@@ -1,0 +1,387 @@
+	github.com/alex-necsoiu/deus-logistics-api/cmd/api		coverage: 0.0% of statements
+	github.com/alex-necsoiu/deus-logistics-api/internal/config		coverage: 0.0% of statements
+	github.com/alex-necsoiu/deus-logistics-api/internal/health		coverage: 0.0% of statements
+	github.com/alex-necsoiu/deus-logistics-api/internal/events		coverage: 0.0% of statements
+# github.com/shoenig/go-m1cpu
+../../pkg/mod/github.com/shoenig/go-m1cpu@v0.1.6/cpu.go:75:17: warning: variable length array folded to constant array as an extension [-Wgnu-folding-constant]
+../../pkg/mod/github.com/shoenig/go-m1cpu@v0.1.6/cpu.go:77:16: warning: variable length array folded to constant array as an extension [-Wgnu-folding-constant]
+=== RUN   TestCreateCargoUseCase
+=== RUN   TestCreateCargoUseCase/successful_cargo_creation
+    use_cases_test.go:153: PASS:	Create(context.backgroundCtx,mock.argumentMatcher)
+=== RUN   TestCreateCargoUseCase/validation_error_-_empty_name
+=== RUN   TestCreateCargoUseCase/validation_error_-_invalid_weight
+=== RUN   TestCreateCargoUseCase/repository_error
+    use_cases_test.go:153: PASS:	Create(context.backgroundCtx,string)
+--- PASS: TestCreateCargoUseCase (0.00s)
+    --- PASS: TestCreateCargoUseCase/successful_cargo_creation (0.00s)
+    --- PASS: TestCreateCargoUseCase/validation_error_-_empty_name (0.00s)
+    --- PASS: TestCreateCargoUseCase/validation_error_-_invalid_weight (0.00s)
+    --- PASS: TestCreateCargoUseCase/repository_error (0.00s)
+=== RUN   TestGetCargoUseCase
+=== RUN   TestGetCargoUseCase/successful_get
+    use_cases_test.go:211: PASS:	GetByID(context.backgroundCtx,uuid.UUID)
+=== RUN   TestGetCargoUseCase/cargo_not_found
+    use_cases_test.go:211: PASS:	GetByID(context.backgroundCtx,uuid.UUID)
+--- PASS: TestGetCargoUseCase (0.00s)
+    --- PASS: TestGetCargoUseCase/successful_get (0.00s)
+    --- PASS: TestGetCargoUseCase/cargo_not_found (0.00s)
+=== RUN   TestListCargosUseCase
+=== RUN   TestListCargosUseCase/successful_list_empty
+    use_cases_test.go:285: PASS:	List(context.backgroundCtx)
+=== RUN   TestListCargosUseCase/successful_list_with_items
+    use_cases_test.go:285: PASS:	List(context.backgroundCtx)
+=== RUN   TestListCargosUseCase/repository_error
+    use_cases_test.go:285: PASS:	List(context.backgroundCtx)
+--- PASS: TestListCargosUseCase (0.00s)
+    --- PASS: TestListCargosUseCase/successful_list_empty (0.00s)
+    --- PASS: TestListCargosUseCase/successful_list_with_items (0.00s)
+    --- PASS: TestListCargosUseCase/repository_error (0.00s)
+=== RUN   TestListCargosByVesselUseCase
+=== RUN   TestListCargosByVesselUseCase/successful_list_by_vessel
+    use_cases_test.go:356: PASS:	ListByVesselID(context.backgroundCtx,uuid.UUID)
+=== RUN   TestListCargosByVesselUseCase/vessel_has_no_cargo
+    use_cases_test.go:356: PASS:	ListByVesselID(context.backgroundCtx,uuid.UUID)
+=== RUN   TestListCargosByVesselUseCase/repository_error
+    use_cases_test.go:356: PASS:	ListByVesselID(context.backgroundCtx,uuid.UUID)
+--- PASS: TestListCargosByVesselUseCase (0.00s)
+    --- PASS: TestListCargosByVesselUseCase/successful_list_by_vessel (0.00s)
+    --- PASS: TestListCargosByVesselUseCase/vessel_has_no_cargo (0.00s)
+    --- PASS: TestListCargosByVesselUseCase/repository_error (0.00s)
+=== RUN   TestUpdateCargoStatusUseCase
+=== RUN   TestUpdateCargoStatusUseCase/successful_status_update
+    use_cases_test.go:424: PASS:	GetByID(context.backgroundCtx,uuid.UUID)
+    use_cases_test.go:424: PASS:	UpdateStatus(context.backgroundCtx,uuid.UUID,cargo.CargoStatus)
+=== RUN   TestUpdateCargoStatusUseCase/invalid_status
+--- PASS: TestUpdateCargoStatusUseCase (0.00s)
+    --- PASS: TestUpdateCargoStatusUseCase/successful_status_update (0.00s)
+    --- PASS: TestUpdateCargoStatusUseCase/invalid_status (0.00s)
+PASS
+coverage: 69.5% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo	1.295s	coverage: 69.5% of statements
+=== RUN   TestSentinelErrors
+=== RUN   TestSentinelErrors/ErrNotFound_is_defined
+=== RUN   TestSentinelErrors/ErrInvalidStatus_is_defined
+=== RUN   TestSentinelErrors/ErrInvalidInput_is_defined
+--- PASS: TestSentinelErrors (0.00s)
+    --- PASS: TestSentinelErrors/ErrNotFound_is_defined (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidStatus_is_defined (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidInput_is_defined (0.00s)
+=== RUN   TestErrorMessages
+=== RUN   TestErrorMessages/ErrNotFound_message
+=== RUN   TestErrorMessages/ErrInvalidStatus_message
+=== RUN   TestErrorMessages/ErrInvalidInput_message
+--- PASS: TestErrorMessages (0.00s)
+    --- PASS: TestErrorMessages/ErrNotFound_message (0.00s)
+    --- PASS: TestErrorMessages/ErrInvalidStatus_message (0.00s)
+    --- PASS: TestErrorMessages/ErrInvalidInput_message (0.00s)
+=== RUN   TestErrorComparison
+=== RUN   TestErrorComparison/wrapped_ErrNotFound_matches_unwrapped
+=== RUN   TestErrorComparison/same_ErrNotFound_reference_matches
+=== RUN   TestErrorComparison/ErrNotFound_does_not_match_ErrInvalidStatus
+--- PASS: TestErrorComparison (0.00s)
+    --- PASS: TestErrorComparison/wrapped_ErrNotFound_matches_unwrapped (0.00s)
+    --- PASS: TestErrorComparison/same_ErrNotFound_reference_matches (0.00s)
+    --- PASS: TestErrorComparison/ErrNotFound_does_not_match_ErrInvalidStatus (0.00s)
+=== RUN   TestErrorDefinitions
+=== RUN   TestErrorDefinitions/ErrInvalidInput
+=== RUN   TestErrorDefinitions/ErrNotFound
+=== RUN   TestErrorDefinitions/ErrInvalidStatus
+--- PASS: TestErrorDefinitions (0.00s)
+    --- PASS: TestErrorDefinitions/ErrInvalidInput (0.00s)
+    --- PASS: TestErrorDefinitions/ErrNotFound (0.00s)
+    --- PASS: TestErrorDefinitions/ErrInvalidStatus (0.00s)
+=== RUN   TestCargoEventStruct
+--- PASS: TestCargoEventStruct (0.00s)
+=== RUN   TestStatusChangedEventStruct
+--- PASS: TestStatusChangedEventStruct (0.00s)
+=== RUN   TestStatusChangedEventStatusValues
+=== RUN   TestStatusChangedEventStatusValues/pending_to_in_transit
+=== RUN   TestStatusChangedEventStatusValues/in_transit_to_delivered
+=== RUN   TestStatusChangedEventStatusValues/pending_to_delivered
+--- PASS: TestStatusChangedEventStatusValues (0.00s)
+    --- PASS: TestStatusChangedEventStatusValues/pending_to_in_transit (0.00s)
+    --- PASS: TestStatusChangedEventStatusValues/in_transit_to_delivered (0.00s)
+    --- PASS: TestStatusChangedEventStatusValues/pending_to_delivered (0.00s)
+=== RUN   TestCargoStatusIsValid
+=== RUN   TestCargoStatusIsValid/valid:_pending
+=== RUN   TestCargoStatusIsValid/valid:_in_transit
+=== RUN   TestCargoStatusIsValid/valid:_delivered
+=== RUN   TestCargoStatusIsValid/invalid:_unknown
+=== RUN   TestCargoStatusIsValid/invalid:_empty
+=== RUN   TestCargoStatusIsValid/invalid:_typo
+--- PASS: TestCargoStatusIsValid (0.00s)
+    --- PASS: TestCargoStatusIsValid/valid:_pending (0.00s)
+    --- PASS: TestCargoStatusIsValid/valid:_in_transit (0.00s)
+    --- PASS: TestCargoStatusIsValid/valid:_delivered (0.00s)
+    --- PASS: TestCargoStatusIsValid/invalid:_unknown (0.00s)
+    --- PASS: TestCargoStatusIsValid/invalid:_empty (0.00s)
+    --- PASS: TestCargoStatusIsValid/invalid:_typo (0.00s)
+=== RUN   TestCargoStatusString
+=== RUN   TestCargoStatusString/pending
+=== RUN   TestCargoStatusString/in_transit
+=== RUN   TestCargoStatusString/delivered
+=== RUN   TestCargoStatusString/custom
+=== RUN   TestCargoStatusString/empty
+--- PASS: TestCargoStatusString (0.00s)
+    --- PASS: TestCargoStatusString/pending (0.00s)
+    --- PASS: TestCargoStatusString/in_transit (0.00s)
+    --- PASS: TestCargoStatusString/delivered (0.00s)
+    --- PASS: TestCargoStatusString/custom (0.00s)
+    --- PASS: TestCargoStatusString/empty (0.00s)
+=== RUN   TestCargoIsDelivered
+=== RUN   TestCargoIsDelivered/delivered_returns_true
+=== RUN   TestCargoIsDelivered/pending_returns_false
+=== RUN   TestCargoIsDelivered/in_transit_returns_false
+--- PASS: TestCargoIsDelivered (0.00s)
+    --- PASS: TestCargoIsDelivered/delivered_returns_true (0.00s)
+    --- PASS: TestCargoIsDelivered/pending_returns_false (0.00s)
+    --- PASS: TestCargoIsDelivered/in_transit_returns_false (0.00s)
+=== RUN   TestCargoIsInTransit
+=== RUN   TestCargoIsInTransit/in_transit_returns_true
+=== RUN   TestCargoIsInTransit/pending_returns_false
+=== RUN   TestCargoIsInTransit/delivered_returns_false
+--- PASS: TestCargoIsInTransit (0.00s)
+    --- PASS: TestCargoIsInTransit/in_transit_returns_true (0.00s)
+    --- PASS: TestCargoIsInTransit/pending_returns_false (0.00s)
+    --- PASS: TestCargoIsInTransit/delivered_returns_false (0.00s)
+=== RUN   TestCreateCargoInputValidation
+=== RUN   TestCreateCargoInputValidation/valid_input
+=== RUN   TestCreateCargoInputValidation/valid_without_description
+=== RUN   TestCreateCargoInputValidation/empty_name
+=== RUN   TestCreateCargoInputValidation/zero_weight
+=== RUN   TestCreateCargoInputValidation/negative_weight
+=== RUN   TestCreateCargoInputValidation/zero_UUID_vessel
+--- PASS: TestCreateCargoInputValidation (0.00s)
+    --- PASS: TestCreateCargoInputValidation/valid_input (0.00s)
+    --- PASS: TestCreateCargoInputValidation/valid_without_description (0.00s)
+    --- PASS: TestCreateCargoInputValidation/empty_name (0.00s)
+    --- PASS: TestCreateCargoInputValidation/zero_weight (0.00s)
+    --- PASS: TestCreateCargoInputValidation/negative_weight (0.00s)
+    --- PASS: TestCreateCargoInputValidation/zero_UUID_vessel (0.00s)
+=== RUN   TestCargoUpdateStatus
+=== RUN   TestCargoUpdateStatus/pending_to_in_transit_(valid_transition)
+=== RUN   TestCargoUpdateStatus/in_transit_to_delivered_(valid_transition)
+=== RUN   TestCargoUpdateStatus/pending_to_pending_(same_state)
+=== RUN   TestCargoUpdateStatus/in_transit_to_in_transit_(same_state)
+=== RUN   TestCargoUpdateStatus/delivered_to_delivered_(same_state)
+=== RUN   TestCargoUpdateStatus/pending_to_delivered_(skip_in_transit)
+=== RUN   TestCargoUpdateStatus/in_transit_to_pending_(backward_transition)
+=== RUN   TestCargoUpdateStatus/delivered_to_pending_(backward_transition)
+=== RUN   TestCargoUpdateStatus/delivered_to_in_transit_(backward_transition)
+=== RUN   TestCargoUpdateStatus/delivered_blocks_all_transitions
+--- PASS: TestCargoUpdateStatus (0.01s)
+    --- PASS: TestCargoUpdateStatus/pending_to_in_transit_(valid_transition) (0.00s)
+    --- PASS: TestCargoUpdateStatus/in_transit_to_delivered_(valid_transition) (0.00s)
+    --- PASS: TestCargoUpdateStatus/pending_to_pending_(same_state) (0.00s)
+    --- PASS: TestCargoUpdateStatus/in_transit_to_in_transit_(same_state) (0.00s)
+    --- PASS: TestCargoUpdateStatus/delivered_to_delivered_(same_state) (0.00s)
+    --- PASS: TestCargoUpdateStatus/pending_to_delivered_(skip_in_transit) (0.00s)
+    --- PASS: TestCargoUpdateStatus/in_transit_to_pending_(backward_transition) (0.00s)
+    --- PASS: TestCargoUpdateStatus/delivered_to_pending_(backward_transition) (0.00s)
+    --- PASS: TestCargoUpdateStatus/delivered_to_in_transit_(backward_transition) (0.00s)
+    --- PASS: TestCargoUpdateStatus/delivered_blocks_all_transitions (0.00s)
+=== RUN   TestCargoCanTransitionTo
+=== RUN   TestCargoCanTransitionTo/pending_can_transition_to_in_transit
+=== RUN   TestCargoCanTransitionTo/in_transit_can_transition_to_delivered
+=== RUN   TestCargoCanTransitionTo/pending_cannot_transition_to_pending
+=== RUN   TestCargoCanTransitionTo/pending_cannot_transition_to_delivered
+=== RUN   TestCargoCanTransitionTo/in_transit_cannot_transition_to_pending
+=== RUN   TestCargoCanTransitionTo/in_transit_cannot_transition_to_in_transit
+=== RUN   TestCargoCanTransitionTo/delivered_cannot_transition_to_pending
+=== RUN   TestCargoCanTransitionTo/delivered_cannot_transition_to_in_transit
+=== RUN   TestCargoCanTransitionTo/delivered_cannot_transition_to_delivered
+--- PASS: TestCargoCanTransitionTo (0.00s)
+    --- PASS: TestCargoCanTransitionTo/pending_can_transition_to_in_transit (0.00s)
+    --- PASS: TestCargoCanTransitionTo/in_transit_can_transition_to_delivered (0.00s)
+    --- PASS: TestCargoCanTransitionTo/pending_cannot_transition_to_pending (0.00s)
+    --- PASS: TestCargoCanTransitionTo/pending_cannot_transition_to_delivered (0.00s)
+    --- PASS: TestCargoCanTransitionTo/in_transit_cannot_transition_to_pending (0.00s)
+    --- PASS: TestCargoCanTransitionTo/in_transit_cannot_transition_to_in_transit (0.00s)
+    --- PASS: TestCargoCanTransitionTo/delivered_cannot_transition_to_pending (0.00s)
+    --- PASS: TestCargoCanTransitionTo/delivered_cannot_transition_to_in_transit (0.00s)
+    --- PASS: TestCargoCanTransitionTo/delivered_cannot_transition_to_delivered (0.00s)
+=== RUN   TestCargoTransitionSequence
+--- PASS: TestCargoTransitionSequence (0.00s)
+PASS
+coverage: 86.7% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo	1.700s	coverage: 86.7% of statements
+=== RUN   TestSentinelErrors
+=== RUN   TestSentinelErrors/ErrInvalidEntry
+=== RUN   TestSentinelErrors/ErrCargoNotFound
+--- PASS: TestSentinelErrors (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidEntry (0.00s)
+    --- PASS: TestSentinelErrors/ErrCargoNotFound (0.00s)
+=== RUN   TestErrorsAreDistinct
+--- PASS: TestErrorsAreDistinct (0.00s)
+=== RUN   TestTrackingEntryStruct
+--- PASS: TestTrackingEntryStruct (0.00s)
+=== RUN   TestAddTrackingInputValidation
+=== RUN   TestAddTrackingInputValidation/valid_input
+=== RUN   TestAddTrackingInputValidation/valid_without_note
+=== RUN   TestAddTrackingInputValidation/zero_UUID_cargo
+=== RUN   TestAddTrackingInputValidation/empty_location
+=== RUN   TestAddTrackingInputValidation/empty_status
+--- PASS: TestAddTrackingInputValidation (0.00s)
+    --- PASS: TestAddTrackingInputValidation/valid_input (0.00s)
+    --- PASS: TestAddTrackingInputValidation/valid_without_note (0.00s)
+    --- PASS: TestAddTrackingInputValidation/zero_UUID_cargo (0.00s)
+    --- PASS: TestAddTrackingInputValidation/empty_location (0.00s)
+    --- PASS: TestAddTrackingInputValidation/empty_status (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking	0.924s	coverage: 100.0% of statements
+?   	github.com/alex-necsoiu/deus-logistics-api/pkg/response	[no test files]
+=== RUN   TestSentinelErrors
+=== RUN   TestSentinelErrors/ErrNotFound
+=== RUN   TestSentinelErrors/ErrInvalidInput
+=== RUN   TestSentinelErrors/ErrCapacityExceeded
+--- PASS: TestSentinelErrors (0.00s)
+    --- PASS: TestSentinelErrors/ErrNotFound (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidInput (0.00s)
+    --- PASS: TestSentinelErrors/ErrCapacityExceeded (0.00s)
+=== RUN   TestErrorsAreDistinct
+--- PASS: TestErrorsAreDistinct (0.00s)
+=== RUN   TestVesselStruct
+--- PASS: TestVesselStruct (0.00s)
+=== RUN   TestCanCargoFit
+=== RUN   TestCanCargoFit/weight_within_capacity
+=== RUN   TestCanCargoFit/weight_at_exact_capacity
+=== RUN   TestCanCargoFit/weight_exceeds_capacity
+=== RUN   TestCanCargoFit/zero_weight
+=== RUN   TestCanCargoFit/negative_weight
+=== RUN   TestCanCargoFit/small_weight
+--- PASS: TestCanCargoFit (0.00s)
+    --- PASS: TestCanCargoFit/weight_within_capacity (0.00s)
+    --- PASS: TestCanCargoFit/weight_at_exact_capacity (0.00s)
+    --- PASS: TestCanCargoFit/weight_exceeds_capacity (0.00s)
+    --- PASS: TestCanCargoFit/zero_weight (0.00s)
+    --- PASS: TestCanCargoFit/negative_weight (0.00s)
+    --- PASS: TestCanCargoFit/small_weight (0.00s)
+=== RUN   TestCreateVesselInputValidate
+=== RUN   TestCreateVesselInputValidate/valid_input
+=== RUN   TestCreateVesselInputValidate/empty_name
+=== RUN   TestCreateVesselInputValidate/zero_capacity
+=== RUN   TestCreateVesselInputValidate/negative_capacity
+=== RUN   TestCreateVesselInputValidate/empty_location
+--- PASS: TestCreateVesselInputValidate (0.00s)
+    --- PASS: TestCreateVesselInputValidate/valid_input (0.00s)
+    --- PASS: TestCreateVesselInputValidate/empty_name (0.00s)
+    --- PASS: TestCreateVesselInputValidate/zero_capacity (0.00s)
+    --- PASS: TestCreateVesselInputValidate/negative_capacity (0.00s)
+    --- PASS: TestCreateVesselInputValidate/empty_location (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel	2.479s	coverage: 100.0% of statements
+=== RUN   TestMapErrorToHTTPStatus
+=== RUN   TestMapErrorToHTTPStatus/nil_error_returns_200_OK
+=== RUN   TestMapErrorToHTTPStatus/ErrNotFound_returns_404
+=== RUN   TestMapErrorToHTTPStatus/cargo.ErrNotFound_returns_404
+=== RUN   TestMapErrorToHTTPStatus/vessel.ErrNotFound_returns_404
+=== RUN   TestMapErrorToHTTPStatus/tracking.ErrCargoNotFound_returns_404
+=== RUN   TestMapErrorToHTTPStatus/ErrInvalidTransition_returns_422
+=== RUN   TestMapErrorToHTTPStatus/cargo.ErrInvalidTransition_returns_422
+=== RUN   TestMapErrorToHTTPStatus/ErrInvalidInput_returns_400
+=== RUN   TestMapErrorToHTTPStatus/cargo.ErrInvalidInput_returns_400
+=== RUN   TestMapErrorToHTTPStatus/cargo.ErrInvalidStatus_returns_400
+=== RUN   TestMapErrorToHTTPStatus/vessel.ErrInvalidInput_returns_400
+=== RUN   TestMapErrorToHTTPStatus/tracking.ErrInvalidEntry_returns_400
+=== RUN   TestMapErrorToHTTPStatus/unknown_error_returns_500
+=== RUN   TestMapErrorToHTTPStatus/wrapped_ErrNotFound_returns_404
+=== RUN   TestMapErrorToHTTPStatus/ErrUnknown_returns_500
+--- PASS: TestMapErrorToHTTPStatus (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/nil_error_returns_200_OK (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/ErrNotFound_returns_404 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/cargo.ErrNotFound_returns_404 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/vessel.ErrNotFound_returns_404 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/tracking.ErrCargoNotFound_returns_404 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/ErrInvalidTransition_returns_422 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/cargo.ErrInvalidTransition_returns_422 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/ErrInvalidInput_returns_400 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/cargo.ErrInvalidInput_returns_400 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/cargo.ErrInvalidStatus_returns_400 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/vessel.ErrInvalidInput_returns_400 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/tracking.ErrInvalidEntry_returns_400 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/unknown_error_returns_500 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/wrapped_ErrNotFound_returns_404 (0.00s)
+    --- PASS: TestMapErrorToHTTPStatus/ErrUnknown_returns_500 (0.00s)
+=== RUN   TestMapErrorToErrorCode
+=== RUN   TestMapErrorToErrorCode/nil_error_returns_empty_code
+=== RUN   TestMapErrorToErrorCode/ErrNotFound_returns_CodeNotFound
+=== RUN   TestMapErrorToErrorCode/cargo.ErrNotFound_returns_CodeNotFound
+=== RUN   TestMapErrorToErrorCode/vessel.ErrNotFound_returns_CodeNotFound
+=== RUN   TestMapErrorToErrorCode/tracking.ErrCargoNotFound_returns_CodeNotFound
+=== RUN   TestMapErrorToErrorCode/ErrInvalidTransition_returns_CodeInvalidTransition
+=== RUN   TestMapErrorToErrorCode/cargo.ErrInvalidTransition_returns_CodeInvalidTransition
+=== RUN   TestMapErrorToErrorCode/ErrInvalidInput_returns_CodeInvalidInput
+=== RUN   TestMapErrorToErrorCode/cargo.ErrInvalidInput_returns_CodeInvalidInput
+=== RUN   TestMapErrorToErrorCode/cargo.ErrInvalidStatus_returns_CodeInvalidInput
+=== RUN   TestMapErrorToErrorCode/vessel.ErrInvalidInput_returns_CodeInvalidInput
+=== RUN   TestMapErrorToErrorCode/tracking.ErrInvalidEntry_returns_CodeInvalidInput
+=== RUN   TestMapErrorToErrorCode/unknown_error_returns_CodeInternalError
+--- PASS: TestMapErrorToErrorCode (0.00s)
+    --- PASS: TestMapErrorToErrorCode/nil_error_returns_empty_code (0.00s)
+    --- PASS: TestMapErrorToErrorCode/ErrNotFound_returns_CodeNotFound (0.00s)
+    --- PASS: TestMapErrorToErrorCode/cargo.ErrNotFound_returns_CodeNotFound (0.00s)
+    --- PASS: TestMapErrorToErrorCode/vessel.ErrNotFound_returns_CodeNotFound (0.00s)
+    --- PASS: TestMapErrorToErrorCode/tracking.ErrCargoNotFound_returns_CodeNotFound (0.00s)
+    --- PASS: TestMapErrorToErrorCode/ErrInvalidTransition_returns_CodeInvalidTransition (0.00s)
+    --- PASS: TestMapErrorToErrorCode/cargo.ErrInvalidTransition_returns_CodeInvalidTransition (0.00s)
+    --- PASS: TestMapErrorToErrorCode/ErrInvalidInput_returns_CodeInvalidInput (0.00s)
+    --- PASS: TestMapErrorToErrorCode/cargo.ErrInvalidInput_returns_CodeInvalidInput (0.00s)
+    --- PASS: TestMapErrorToErrorCode/cargo.ErrInvalidStatus_returns_CodeInvalidInput (0.00s)
+    --- PASS: TestMapErrorToErrorCode/vessel.ErrInvalidInput_returns_CodeInvalidInput (0.00s)
+    --- PASS: TestMapErrorToErrorCode/tracking.ErrInvalidEntry_returns_CodeInvalidInput (0.00s)
+    --- PASS: TestMapErrorToErrorCode/unknown_error_returns_CodeInternalError (0.00s)
+=== RUN   TestMapErrorToErrorMessage
+=== RUN   TestMapErrorToErrorMessage/nil_error_returns_empty_message
+=== RUN   TestMapErrorToErrorMessage/ErrNotFound_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/cargo.ErrNotFound_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/vessel.ErrNotFound_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/tracking.ErrCargoNotFound_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/ErrInvalidTransition_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/cargo.ErrInvalidTransition_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/ErrInvalidInput_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/cargo.ErrInvalidInput_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/cargo.ErrInvalidStatus_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/vessel.ErrInvalidInput_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/tracking.ErrInvalidEntry_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/unknown_error_returns_standard_message
+=== RUN   TestMapErrorToErrorMessage/ErrUnknown_returns_standard_message
+--- PASS: TestMapErrorToErrorMessage (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/nil_error_returns_empty_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/ErrNotFound_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/cargo.ErrNotFound_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/vessel.ErrNotFound_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/tracking.ErrCargoNotFound_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/ErrInvalidTransition_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/cargo.ErrInvalidTransition_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/ErrInvalidInput_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/cargo.ErrInvalidInput_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/cargo.ErrInvalidStatus_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/vessel.ErrInvalidInput_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/tracking.ErrInvalidEntry_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/unknown_error_returns_standard_message (0.00s)
+    --- PASS: TestMapErrorToErrorMessage/ErrUnknown_returns_standard_message (0.00s)
+=== RUN   TestErrorCodeValues
+=== RUN   TestErrorCodeValues/CodeNotFound_value
+=== RUN   TestErrorCodeValues/CodeInvalidInput_value
+=== RUN   TestErrorCodeValues/CodeInvalidTransition_value
+=== RUN   TestErrorCodeValues/CodeInternalError_value
+--- PASS: TestErrorCodeValues (0.00s)
+    --- PASS: TestErrorCodeValues/CodeNotFound_value (0.00s)
+    --- PASS: TestErrorCodeValues/CodeInvalidInput_value (0.00s)
+    --- PASS: TestErrorCodeValues/CodeInvalidTransition_value (0.00s)
+    --- PASS: TestErrorCodeValues/CodeInternalError_value (0.00s)
+=== RUN   TestSentinelErrors
+=== RUN   TestSentinelErrors/ErrNotFound_has_message
+=== RUN   TestSentinelErrors/ErrInvalidTransition_has_message
+=== RUN   TestSentinelErrors/ErrInvalidInput_has_message
+=== RUN   TestSentinelErrors/ErrUnknown_has_message
+--- PASS: TestSentinelErrors (0.00s)
+    --- PASS: TestSentinelErrors/ErrNotFound_has_message (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidTransition_has_message (0.00s)
+    --- PASS: TestSentinelErrors/ErrInvalidInput_has_message (0.00s)
+    --- PASS: TestSentinelErrors/ErrUnknown_has_message (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/errors	2.120s	coverage: 100.0% of statements

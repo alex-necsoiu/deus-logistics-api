@@ -18,10 +18,12 @@ type TrackingService struct {
 // NewTrackingService creates a new tracking service with the given repository.
 //
 // Inputs:
-//   repo - tracking repository implementation (must not be nil)
+//
+//	repo - tracking repository implementation (must not be nil)
 //
 // Returns:
-//   *TrackingService with initialized repository
+//
+//	*TrackingService with initialized repository
 func NewTrackingService(repo tracking.Repository) *TrackingService {
 	return &TrackingService{repo: repo}
 }
@@ -29,12 +31,14 @@ func NewTrackingService(repo tracking.Repository) *TrackingService {
 // AddTrackingEntry creates a new tracking entry for a cargo shipment.
 //
 // Inputs:
-//   ctx   - request context for cancellation and tracing
-//   input - tracking entry details (CargoID, Location, Status required)
+//
+//	ctx   - request context for cancellation and tracing
+//	input - tracking entry details (CargoID, Location, Status required)
 //
 // Returns:
-//   *TrackingEntry on success
-//   ErrInvalidEntry if CargoID is nil, Location is empty, or Status is empty
+//
+//	*TrackingEntry on success
+//	ErrInvalidEntry if CargoID is nil, Location is empty, or Status is empty
 //
 // Side effects:
 //   - DB write to tracking_entries table
@@ -51,13 +55,15 @@ func (s *TrackingService) AddTrackingEntry(ctx context.Context, input tracking.A
 // GetTrackingHistory retrieves all tracking entries for a specific cargo shipment.
 //
 // Inputs:
-//   ctx    - request context for cancellation and tracing
-//   cargoID - UUID of the cargo (must not be nil)
+//
+//	ctx    - request context for cancellation and tracing
+//	cargoID - UUID of the cargo (must not be nil)
 //
 // Returns:
-//   []*TrackingEntry sorted by timestamp on success
-//   Empty slice if no tracking entries exist
-//   ErrInvalidEntry if cargoID is nil
+//
+//	[]*TrackingEntry sorted by timestamp on success
+//	Empty slice if no tracking entries exist
+//	ErrInvalidEntry if cargoID is nil
 //
 // Side effects:
 //   - DB read from tracking_entries table

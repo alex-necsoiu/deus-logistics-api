@@ -3,11 +3,11 @@ package cargo
 // CargoApplicationManager manages all cargo use cases.
 // It provides a single point of dependency injection for the application layer.
 type CargoApplicationManager struct {
-	CreateCargo       *CreateCargoUseCase
-	GetCargo          *GetCargoUseCase
-	ListCargos        *ListCargosUseCase
+	CreateCargo        *CreateCargoUseCase
+	GetCargo           *GetCargoUseCase
+	ListCargos         *ListCargosUseCase
 	ListCargosByVessel *ListCargosByVesselUseCase
-	UpdateStatus      *UpdateCargoStatusUseCase
+	UpdateStatus       *UpdateCargoStatusUseCase
 }
 
 // NewCargoApplicationManager creates and wires all cargo use cases.

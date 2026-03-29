@@ -1,21 +1,25 @@
 package http
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 
 	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel"
+	"github.com/alex-necsoiu/deus-logistics-api/internal/health"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
 // Router registers all HTTP routes and middleware.
 func Router(
 	engine *gin.Engine,
+	db *pgxpool.Pool,
 	cargoApp *appcargo.CargoApplicationManager,
 	vesselSvc vessel.Service,
 	trackingSvc tracking.Service,
@@ -25,9 +29,12 @@ func Router(
 	engine.Use(loggingMiddleware())
 	engine.Use(recoveryMiddleware())
 
+	// Initialize health reporter
+	healthReporter := health.NewReporter(db)
+
 	// Health and readiness endpoints
-	engine.GET("/health", healthCheck)
-	engine.GET("/ready", readinessCheck)
+	engine.GET("/health", healthCheckHandler(healthReporter))
+	engine.GET("/ready", readinessCheckHandler(healthReporter))
 
 	// API routes
 	api := engine.Group("/api/v1")
@@ -52,7 +59,7 @@ func Router(
 	api.GET("/cargoes/:id/tracking", trackingHandler.GetTrackingHistory)
 }
 
-// requestIDMiddleware injects a unique request ID into the context.
+// requestIDMiddleware injects a unique request ID into the context and headers.
 func requestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := c.GetHeader(response.HeaderRequestID)
@@ -61,16 +68,26 @@ func requestIDMiddleware() gin.HandlerFunc {
 		}
 		c.Set(response.CtxRequestID, requestID)
 		c.Header(response.HeaderRequestID, requestID)
+
+		// Add request_id to context for downstream middleware and handlers
+		ctx := c.Request.Context()
+		ctx = context.WithValue(ctx, response.CtxRequestID, requestID)
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
 }
 
-// loggingMiddleware logs incoming requests and responses.
+// loggingMiddleware logs incoming requests and responses with structured JSON format.
+// Adds request_id to all log entries.
 func loggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger := zerolog.New(nil)
-		ctx := logger.WithContext(c.Request.Context())
-		c.Request = c.Request.WithContext(ctx)
+		// Ensure logger has request_id in context
+		ctx := c.Request.Context()
+		requestID := c.GetString(response.CtxRequestID)
+		if requestID != "" {
+			ctx = context.WithValue(ctx, response.CtxRequestID, requestID)
+			c.Request = c.Request.WithContext(ctx)
+		}
 
 		c.Next()
 
@@ -79,25 +96,30 @@ func loggingMiddleware() gin.HandlerFunc {
 			Str("method", c.Request.Method).
 			Str("path", c.Request.URL.Path).
 			Int("status", c.Writer.Status()).
-			Str(response.CtxRequestID, c.GetString(response.CtxRequestID)).
-			Msg("http request")
+			Int("content_length", c.Writer.Size()).
+			Str("request_id", requestID).
+			Msg("http request completed")
 	}
 }
 
-// recoveryMiddleware recovers from panics and returns 500 error.
+// recoveryMiddleware recovers from panics and returns 500 error with proper logging.
 func recoveryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				zerolog.Ctx(c.Request.Context()).Error().
+				requestID := c.GetString(response.CtxRequestID)
+				log := zerolog.Ctx(c.Request.Context())
+				log.Error().
 					Interface("panic", err).
+					Str("request_id", requestID).
+					Str("path", c.Request.URL.Path).
 					Msg("http panic recovered")
 
 				c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 					Error: response.ErrorDetail{
 						Code:      response.CodeInternalError,
 						Message:   response.MsgInternalServerError,
-						RequestID: c.GetString(response.CtxRequestID),
+						RequestID: requestID,
 					},
 				})
 			}
@@ -106,16 +128,32 @@ func recoveryMiddleware() gin.HandlerFunc {
 	}
 }
 
-// healthCheck handles GET /health
-func healthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+// healthCheckHandler handles GET /health (liveness probe)
+func healthCheckHandler(reporter *health.Reporter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		check := reporter.CheckLiveness(c.Request.Context())
+		if check.Status != health.StatusHealthy {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status": "unhealthy",
+				"check":  check,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status": "healthy",
+			"check":  check,
+		})
+	}
 }
 
-// readinessCheck handles GET /ready
-func readinessCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ready",
-	})
+// readinessCheckHandler handles GET /ready (readiness probe)
+func readinessCheckHandler(reporter *health.Reporter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result := reporter.CheckReadiness(c.Request.Context())
+		statusCode := http.StatusOK
+		if !result.Ready {
+			statusCode = http.StatusServiceUnavailable
+		}
+		c.JSON(statusCode, result)
+	}
 }

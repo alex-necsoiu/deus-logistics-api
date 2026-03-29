@@ -41,40 +41,32 @@ func DefaultProducerConfig(brokers []string, topic string) ProducerConfig {
 	}
 }
 
-// DeliveryReport represents the result of a message delivery attempt.
-type DeliveryReport struct {
-	Message   kafka.Message
-	Err       error
-	Attempt   int
-	Timestamp time.Time
-}
-
 // EventPublisher publishes events to Kafka using async producer pattern.
 // Implements fire-and-forget with non-blocking delivery report handling.
 // Production-grade: includes retry logic, structured logging, and graceful shutdown.
 type EventPublisher struct {
-	writer              *kafka.Writer
-	topic               string
-	config              ProducerConfig
-	deliveryReports     chan DeliveryReport
-	wg                  sync.WaitGroup
-	ctx                 context.Context
-	cancel              context.CancelFunc
-	mu                  sync.Mutex
-	closed              bool
-	failureMetrics      map[string]int // Track failures per event type
-	lastFlushTime       time.Time
+	writer         *kafka.Writer
+	topic          string
+	config         ProducerConfig
+	wg             sync.WaitGroup
+	ctx            context.Context
+	cancel         context.CancelFunc
+	mu             sync.Mutex
+	closed         bool
+	failureMetrics map[string]int // Track failures per event type
 }
 
 // NewEventPublisher creates a production-grade Kafka event publisher.
 // Uses async producer with delivery report handling in background goroutine.
 //
 // Inputs:
-//   brokers - Kafka broker addresses (must not be empty)
-//   topic   - Kafka topic name (must not be empty)
+//
+//	brokers - Kafka broker addresses (must not be empty)
+//	topic   - Kafka topic name (must not be empty)
 //
 // Returns:
-//   *EventPublisher ready to publish events safely
+//
+//	*EventPublisher ready to publish events safely
 func NewEventPublisher(brokers []string, topic string) *EventPublisher {
 	config := DefaultProducerConfig(brokers, topic)
 	return NewEventPublisherWithConfig(config)
@@ -93,24 +85,18 @@ func NewEventPublisherWithConfig(config ProducerConfig) *EventPublisher {
 		BatchTimeout: 100 * time.Millisecond,
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
-		RequiredAcks: -1, // Wait for all replicas (-1 = all, as in Kafka)
+		RequiredAcks: -1,   // Wait for all replicas (-1 = all, as in Kafka)
 		Async:        true, // Non-blocking: fire-and-forget
 	})
 
 	p := &EventPublisher{
-		writer:          writer,
-		topic:           config.Topic,
-		config:          config,
-		deliveryReports: make(chan DeliveryReport, config.QueueSize),
-		ctx:             ctx,
-		cancel:          cancel,
-		failureMetrics:  make(map[string]int),
-		lastFlushTime:   time.Now(),
+		writer:         writer,
+		topic:          config.Topic,
+		config:         config,
+		ctx:            ctx,
+		cancel:         cancel,
+		failureMetrics: make(map[string]int),
 	}
-
-	// Start background goroutine for delivery report handling
-	p.wg.Add(1)
-	go p.handleDeliveryReports()
 
 	return p
 }
@@ -120,11 +106,13 @@ func NewEventPublisherWithConfig(config ProducerConfig) *EventPublisher {
 // Method returns immediately after queuing message (non-blocking).
 //
 // Inputs:
-//   ctx   - Request context for tracing
-//   event - Cargo status changed event to publish
+//
+//	ctx   - Request context for tracing
+//	event - Cargo status changed event to publish
 //
 // Returns:
-//   Error for interface compliance only; must be ignored by callers (fire-and-forget)
+//
+//	Error for interface compliance only; must be ignored by callers (fire-and-forget)
 func (p *EventPublisher) PublishStatusChanged(ctx context.Context, event cargo.StatusChangedEvent) error {
 	p.mu.Lock()
 	if p.closed {
@@ -233,39 +221,12 @@ func (p *EventPublisher) sendAsync(ctx context.Context, cargoID, eventType strin
 	}
 }
 
-// handleDeliveryReports processes delivery reports in background goroutine.
-// Implements structured error handling and metrics collection.
-func (p *EventPublisher) handleDeliveryReports() {
-	defer p.wg.Done()
-	logger := zerolog.New(zerolog.NewConsoleWriter())
-
-	for {
-		select {
-		case <-p.ctx.Done():
-			logger.Debug().Msg("delivery report handler shutting down")
-			return
-		case report := <-p.deliveryReports:
-			if report.Err != nil {
-				logger.Error().
-					Err(report.Err).
-					Int("attempt", report.Attempt).
-					Time("timestamp", report.Timestamp).
-					Msg("delivery report received: failed")
-			} else {
-				logger.Debug().
-					Int("attempt", report.Attempt).
-					Time("timestamp", report.Timestamp).
-					Msg("delivery report received: success")
-			}
-		}
-	}
-}
-
 // Close gracefully closes the Kafka producer and flushes pending messages.
 // Waits for all in-flight messages and delivery reports before returning.
 //
 // Returns:
-//   Error if close operation fails
+//
+//	Error if close operation fails
 //
 // Side effects:
 //   - Flushes pending messages with timeout

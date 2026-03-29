@@ -1,0 +1,15 @@
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo [setup failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/config [setup failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel [setup failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/transport/http [setup failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/transport/middleware [setup failed]
+	github.com/alex-necsoiu/deus-logistics-api/cmd/api		coverage: 0.0% of statements
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/events [build failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/postgres [build failed]
+FAIL	github.com/alex-necsoiu/deus-logistics-api/internal/validation [build failed]
+?   	github.com/alex-necsoiu/deus-logistics-api/pkg/response	[no test files]
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo	1.256s	coverage: 86.7% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking	0.921s	coverage: 100.0% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/errors	0.395s	coverage: 100.0% of statements
+ok  	github.com/alex-necsoiu/deus-logistics-api/internal/service	0.725s	coverage: 71.4% of statements
+FAIL

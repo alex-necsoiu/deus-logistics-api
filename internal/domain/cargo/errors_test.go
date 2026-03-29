@@ -46,24 +46,24 @@ func TestSentinelErrors(t *testing.T) {
 // TestErrorMessages validates the error message content.
 func TestErrorMessages(t *testing.T) {
 	tests := []struct {
-		name          string
-		err           error
-		expectedMsg   string
+		name        string
+		err         error
+		expectedMsg string
 	}{
 		{
-			name:          "ErrNotFound message",
-			err:           ErrNotFound,
-			expectedMsg:   "cargo not found",
+			name:        "ErrNotFound message",
+			err:         ErrNotFound,
+			expectedMsg: "cargo not found",
 		},
 		{
-			name:          "ErrInvalidStatus message",
-			err:           ErrInvalidStatus,
-			expectedMsg:   "invalid cargo status",
+			name:        "ErrInvalidStatus message",
+			err:         ErrInvalidStatus,
+			expectedMsg: "invalid cargo status",
 		},
 		{
-			name:          "ErrInvalidInput message",
-			err:           ErrInvalidInput,
-			expectedMsg:   "invalid input",
+			name:        "ErrInvalidInput message",
+			err:         ErrInvalidInput,
+			expectedMsg: "invalid input",
 		},
 	}
 
@@ -82,9 +82,9 @@ func TestErrorMessages(t *testing.T) {
 // TestErrorComparison validates error comparison and wrapping.
 func TestErrorComparison(t *testing.T) {
 	tests := []struct {
-		name       string
-		givenErr   error
-		targetErr  error
+		name        string
+		givenErr    error
+		targetErr   error
 		shouldMatch bool
 	}{
 		{
@@ -126,7 +126,7 @@ func TestErrorDefinitions(t *testing.T) {
 	// Then: all required errors are defined and not nil
 
 	requiredErrors := map[string]error{
-		"ErrNotFound":     ErrNotFound,
+		"ErrNotFound":      ErrNotFound,
 		"ErrInvalidStatus": ErrInvalidStatus,
 		"ErrInvalidInput":  ErrInvalidInput,
 	}

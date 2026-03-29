@@ -58,7 +58,7 @@ func startTestContainer(t *testing.T) (*pgxpool.Pool, func()) {
 				break
 			}
 		}
-		time.Sleep(time.Duration((i + 1) * 500) * time.Millisecond)
+		time.Sleep(time.Duration((i+1)*500) * time.Millisecond)
 	}
 	require.NoError(t, err, "failed to connect to test database")
 

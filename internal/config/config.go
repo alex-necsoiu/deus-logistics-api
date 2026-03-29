@@ -9,12 +9,12 @@ import (
 // Config holds all application configuration from environment variables.
 type Config struct {
 	// Database configuration
-	DBHost        string
-	DBPort        int
-	DBUser        string
-	DBPass        string
-	DBName        string
-	DBSSLMode     string
+	DBHost    string
+	DBPort    int
+	DBUser    string
+	DBPass    string
+	DBName    string
+	DBSSLMode string
 	// Server configuration
 	ServerPort int
 	ServerEnv  string

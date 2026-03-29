@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
 
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
 )
@@ -36,9 +37,20 @@ func (r *EventRepository) Store(ctx context.Context, event cargo.CargoEvent) err
 	)
 
 	if err != nil {
+		zerolog.Ctx(ctx).Error().
+			Err(err).
+			Str("cargo_id", event.CargoID.String()).
+			Str("old_status", event.OldStatus.String()).
+			Str("new_status", event.NewStatus.String()).
+			Msg("failed to store cargo event")
 		return fmt.Errorf("storing cargo event: %w", err)
 	}
 
+	zerolog.Ctx(ctx).Debug().
+		Str("cargo_id", event.CargoID.String()).
+		Str("old_status", event.OldStatus.String()).
+		Str("new_status", event.NewStatus.String()).
+		Msg("cargo event stored in database")
 	return nil
 }
 
@@ -53,6 +65,10 @@ func (r *EventRepository) ListByCargoID(ctx context.Context, cargoID uuid.UUID) 
 
 	rows, err := r.pool.Query(ctx, query, cargoID)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().
+			Err(err).
+			Str("cargo_id", cargoID.String()).
+			Msg("failed to query cargo events")
 		return nil, fmt.Errorf("listing cargo events: %w", err)
 	}
 	defer rows.Close()
@@ -69,6 +85,10 @@ func (r *EventRepository) ListByCargoID(ctx context.Context, cargoID uuid.UUID) 
 			&newStatus,
 			&e.Timestamp,
 		); err != nil {
+			zerolog.Ctx(ctx).Error().
+				Err(err).
+				Str("cargo_id", cargoID.String()).
+				Msg("failed to scan cargo event row")
 			return nil, fmt.Errorf("scanning cargo event: %w", err)
 		}
 
@@ -78,8 +98,16 @@ func (r *EventRepository) ListByCargoID(ctx context.Context, cargoID uuid.UUID) 
 	}
 
 	if err := rows.Err(); err != nil {
+		zerolog.Ctx(ctx).Error().
+			Err(err).
+			Str("cargo_id", cargoID.String()).
+			Msg("rows iteration error for cargo events")
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
+	zerolog.Ctx(ctx).Debug().
+		Int("count", len(events)).
+		Str("cargo_id", cargoID.String()).
+		Msg("cargo events retrieved from database")
 	return events, nil
 }

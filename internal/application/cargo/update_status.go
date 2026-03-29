@@ -35,18 +35,33 @@ func NewUpdateCargoStatusUseCase(
 func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, newStatus domaincargo.CargoStatus) (*domaincargo.Cargo, error) {
 	// Quick validation: status must be a recognized value
 	if !newStatus.IsValid() {
+		zerolog.Ctx(ctx).Warn().
+			Str("cargo_id", id.String()).
+			Str("status", newStatus.String()).
+			Msg("invalid cargo status provided")
 		return nil, domaincargo.ErrInvalidStatus
 	}
 
 	// Retrieve current cargo state
 	currentCargo, err := uc.cargoRepo.GetByID(ctx, id)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().
+			Err(err).
+			Str("cargo_id", id.String()).
+			Msg("failed to retrieve cargo for status update")
 		return nil, fmt.Errorf("update_cargo_status: %w", err)
 	}
 
 	// Domain-level state machine enforcement: UpdateStatus() encodes all business rules
 	oldStatus := currentCargo.Status
 	if err := currentCargo.UpdateStatus(newStatus); err != nil {
+		// Log invalid state transitions
+		zerolog.Ctx(ctx).Warn().
+			Str("cargo_id", id.String()).
+			Str("current_status", oldStatus.String()).
+			Str("requested_status", newStatus.String()).
+			Err(err).
+			Msg("invalid cargo status transition")
 		// Return domain error directly (ErrInvalidTransition or ErrInvalidStatus)
 		return nil, err
 	}
@@ -54,6 +69,12 @@ func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, n
 	// Persist the state transition to database
 	updatedCargo, err := uc.cargoRepo.UpdateStatus(ctx, id, newStatus)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().
+			Err(err).
+			Str("cargo_id", id.String()).
+			Str("old_status", oldStatus.String()).
+			Str("new_status", newStatus.String()).
+			Msg("failed to persist cargo status update")
 		return nil, fmt.Errorf("update_cargo_status: %w", err)
 	}
 
@@ -67,7 +88,11 @@ func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, n
 		}
 		if _, err := uc.trackingRepo.Append(ctx, trackingInput); err != nil {
 			// Log tracking error but don't fail the status update
-			zerolog.Ctx(ctx).Warn().Err(err).Str("cargo_id", id.String()).Msg("failed to append tracking record")
+			zerolog.Ctx(ctx).Warn().
+				Err(err).
+				Str("cargo_id", id.String()).
+				Str("status", newStatus.String()).
+				Msg("failed to append tracking record after status update")
 		}
 	}
 
@@ -83,16 +108,28 @@ func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, n
 			Timestamp: updatedCargo.UpdatedAt,
 		}
 		if err := uc.publisher.PublishStatusChanged(ctx, event); err != nil {
-			zerolog.Ctx(ctx).Warn().Err(err).Str("cargo_id", id.String()).Msg("failed to publish status changed event")
+			// Log publish failure but continue
+			zerolog.Ctx(ctx).Warn().
+				Err(err).
+				Str("cargo_id", id.String()).
+				Str("event_id", event.ID).
+				Str("new_status", newStatus.String()).
+				Msg("failed to publish cargo status changed event to kafka")
+		} else {
+			zerolog.Ctx(ctx).Debug().
+				Str("cargo_id", id.String()).
+				Str("event_id", event.ID).
+				Str("new_status", newStatus.String()).
+				Msg("cargo status changed event published to kafka")
 		}
 	}
 
-	// Log successful transition
+	// Log successful transition as business event
 	zerolog.Ctx(ctx).Info().
 		Str("cargo_id", id.String()).
 		Str("old_status", oldStatus.String()).
 		Str("new_status", newStatus.String()).
-		Msg("cargo status updated")
+		Msg("business_event:cargo_status_updated")
 
 	return updatedCargo, nil
 }

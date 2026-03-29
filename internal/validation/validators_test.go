@@ -275,9 +275,9 @@ func TestValidateCargoStatus(t *testing.T) {
 // TestValidateVesselCapacity tests the ValidateVesselCapacity validator.
 func TestValidateVesselCapacity(t *testing.T) {
 	tests := []struct {
-		name    string
+		name     string
 		capacity float64
-		wantErr bool
+		wantErr  bool
 	}{
 		{
 			name:     "valid capacity in range",

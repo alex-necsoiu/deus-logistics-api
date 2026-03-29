@@ -37,6 +37,7 @@ func (c *EventConsumer) Start(ctx context.Context) {
 		for {
 			select {
 			case <-c.done:
+				zerolog.Ctx(ctx).Info().Msg("kafka consumer stopped")
 				return
 			default:
 				msg, err := c.reader.ReadMessage(ctx)
@@ -44,16 +45,30 @@ func (c *EventConsumer) Start(ctx context.Context) {
 					zerolog.Ctx(ctx).Error().Err(err).Msg("failed to read kafka message")
 					continue
 				}
+
+				// Generate request_id for this event processing
+				requestID := uuid.New().String()
+				eventCtx := context.WithValue(ctx, "request_id", requestID)
+				eventLog := zerolog.Ctx(eventCtx)
+
 				var event cargo.StatusChangedEvent
 				if err := json.Unmarshal(msg.Value, &event); err != nil {
-					zerolog.Ctx(ctx).Error().Err(err).Msg("failed to unmarshal event")
+					eventLog.Error().
+						Err(err).
+						Bytes("message", msg.Value).
+						Msg("failed to unmarshal cargo status changed event")
 					continue
 				}
+
 				cargoID, err := uuid.Parse(event.CargoID)
 				if err != nil {
-					zerolog.Ctx(ctx).Error().Err(err).Msg("invalid cargo ID in event")
+					eventLog.Error().
+						Err(err).
+						Str("cargo_id", event.CargoID).
+						Msg("invalid cargo ID in event")
 					continue
 				}
+
 				cargoEvent := cargo.CargoEvent{
 					ID:        uuid.New(),
 					CargoID:   cargoID,
@@ -61,9 +76,24 @@ func (c *EventConsumer) Start(ctx context.Context) {
 					NewStatus: event.NewStatus,
 					Timestamp: event.Timestamp,
 				}
-				if err := c.repo.Store(ctx, cargoEvent); err != nil {
-					zerolog.Ctx(ctx).Error().Err(err).Msg("failed to store event")
+
+				if err := c.repo.Store(eventCtx, cargoEvent); err != nil {
+					eventLog.Error().
+						Err(err).
+						Str("cargo_id", cargoID.String()).
+						Str("old_status", event.OldStatus.String()).
+						Str("new_status", event.NewStatus.String()).
+						Msg("failed to store cargo event in database")
+					continue
 				}
+
+				// Log business event
+				eventLog.Info().
+					Str("cargo_id", cargoID.String()).
+					Str("old_status", event.OldStatus.String()).
+					Str("new_status", event.NewStatus.String()).
+					Str("timestamp", event.Timestamp.String()).
+					Msg("cargo status changed event processed successfully")
 			}
 		}
 	}()

@@ -9,19 +9,19 @@ import (
 // Vessel represents a ship that carries cargo.
 // This is the pure domain model — never expose sqlc-generated types here.
 type Vessel struct {
-	ID               uuid.UUID
-	Name             string
-	Capacity         float64
-	CurrentLocation  string
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID              uuid.UUID
+	Name            string
+	Capacity        float64
+	CurrentLocation string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 // CreateVesselInput contains validated input for creating a new vessel record.
 type CreateVesselInput struct {
-	Name             string
-	Capacity         float64
-	CurrentLocation  string
+	Name            string
+	Capacity        float64
+	CurrentLocation string
 }
 
 // Validate checks that all required fields for vessel creation are present and valid.

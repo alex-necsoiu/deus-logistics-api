@@ -14,11 +14,11 @@ import (
 
 // mockVesselRepository is a mock implementation of vessel.Repository for testing.
 type mockVesselRepository struct {
-	createFunc       func(ctx context.Context, input vessel.CreateVesselInput) (*vessel.Vessel, error)
-	getByIDFunc      func(ctx context.Context, id uuid.UUID) (*vessel.Vessel, error)
-	listFunc         func(ctx context.Context) ([]*vessel.Vessel, error)
-	updateLocFunc    func(ctx context.Context, id uuid.UUID, location string) (*vessel.Vessel, error)
-	updateCapFunc    func(ctx context.Context, id uuid.UUID, capacity float64) (*vessel.Vessel, error)
+	createFunc    func(ctx context.Context, input vessel.CreateVesselInput) (*vessel.Vessel, error)
+	getByIDFunc   func(ctx context.Context, id uuid.UUID) (*vessel.Vessel, error)
+	listFunc      func(ctx context.Context) ([]*vessel.Vessel, error)
+	updateLocFunc func(ctx context.Context, id uuid.UUID, location string) (*vessel.Vessel, error)
+	updateCapFunc func(ctx context.Context, id uuid.UUID, capacity float64) (*vessel.Vessel, error)
 }
 
 func (m *mockVesselRepository) Create(ctx context.Context, input vessel.CreateVesselInput) (*vessel.Vessel, error) {
@@ -77,7 +77,6 @@ func TestVesselServiceCreateVessel(t *testing.T) {
 	assert.Equal(t, "Ship Alpha", result.Name)
 	assert.Equal(t, 5000.0, result.Capacity)
 }
-
 
 // TestVesselServiceGetVessel tests retrieving vessel by ID.
 func TestVesselServiceGetVessel(t *testing.T) {

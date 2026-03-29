@@ -95,7 +95,7 @@ func main() {
 	engine := gin.New()
 
 	// Register all routes
-	transporthttp.Router(engine, cargoApp, vesselSvc, trackingSvc)
+	transporthttp.Router(engine, pool, cargoApp, vesselSvc, trackingSvc)
 	log.Info().Msg("✓ HTTP routes registered")
 
 	// 11. Create HTTP server
