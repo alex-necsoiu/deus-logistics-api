@@ -37,6 +37,7 @@ node_modules/
 .Trashes
 ehthumbs.db
 Thumbs.db
+api
 
 # Go workspace files
 go.work

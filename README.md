@@ -35,28 +35,28 @@ DEUS Logistics API is a production-grade backend service for managing maritime c
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                   HTTP Client                        │
+│                   HTTP Client                       │
 └─────────────────────┬───────────────────────────────┘
                       │ REST
 ┌─────────────────────▼───────────────────────────────┐
-│              Transport Layer (Gin)                   │
-│         Handlers · DTOs · Error Mapping              │
+│              Transport Layer (Gin)                  │
+│         Handlers · DTOs · Error Mapping             │
 └─────────────────────┬───────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────┐
-│             Application Layer                        │
-│        Use Cases · Orchestration · Validation        │
+│             Application Layer                       │
+│        Use Cases · Orchestration · Validation       │
 └─────────────────────┬───────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────┐
-│                 Domain Layer                         │
-│      Entities · State Machine · Business Rules       │
-│    cargo/ · vessel/ · tracking/  (per-entity pkg)    │
+│                 Domain Layer                        │
+│      Entities · State Machine · Business Rules      │
+│    cargo/ · vessel/ · tracking/  (per-entity pkg)   │
 └─────────────────────┬───────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────┐
-│             Infrastructure Layer                     │
-│   PostgreSQL (pgx) · Kafka Producer · Consumer       │
+│             Infrastructure Layer                    │
+│   PostgreSQL (pgx) · Kafka Producer · Consumer      │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -591,7 +591,7 @@ healthcheck:
 
 ## 📄 License
 
-MIT License — Copyright (c) 2025 Alex Necsoiu
+MIT License — Copyright (c) 2026 Alex Necsoiu
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
 
