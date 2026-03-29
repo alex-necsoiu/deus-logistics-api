@@ -106,10 +106,10 @@ func (s *CargoService) UpdateCargoStatus(ctx context.Context, id uuid.UUID, stat
 		return nil, fmt.Errorf("updateCargoStatus: %w", err)
 	}
 
-	// Create tracking record for the status change
+	// Append tracking record for the status change (APPEND-ONLY)
 	if s.tracker != nil {
 		trackingInput := tracking.AddTrackingInput{CargoID: id, Location: "Unknown", Status: status.String(), Note: fmt.Sprintf("Status changed from %s to %s", oldStatus.String(), status.String())}
-		_, _ = s.tracker.Create(ctx, trackingInput)
+		_, _ = s.tracker.Append(ctx, trackingInput)
 	}
 
 	// Fire-and-forget Kafka publish: errors are logged by producer but must not fail the HTTP response.

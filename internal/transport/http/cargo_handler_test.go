@@ -81,7 +81,7 @@ type MockTrackingRepository struct {
 	mock.Mock
 }
 
-func (m *MockTrackingRepository) Create(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+func (m *MockTrackingRepository) Append(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
 	args := m.Called(ctx, input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -98,7 +98,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *MockCargoRepository) {
 	mockTrackingRepo := new(MockTrackingRepository)
 
 	// Set up default behavior for tracking repo: allow any Create calls
-	mockTrackingRepo.On("Create", mock.Anything, mock.Anything).
+	mockTrackingRepo.On("Append", mock.Anything, mock.Anything).
 		Return(&tracking.TrackingEntry{}, nil)
 
 	// Set up default behavior for publisher: allow any PublishStatusChanged calls

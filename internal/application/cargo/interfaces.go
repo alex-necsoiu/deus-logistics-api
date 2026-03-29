@@ -18,8 +18,11 @@ type CargoRepository interface {
 }
 
 // TrackingRepository defines persistence operations for tracking events.
+// APPEND-ONLY CONSTRAINT: Only Append() is allowed. No updates or deletes.
 type TrackingRepository interface {
-	Create(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
+	// Append writes a new tracking entry to the immutable append-only log.
+	// This is the ONLY write operation allowed on tracking entries.
+	Append(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
 }
 
 // EventPublisher defines event publishing operations.

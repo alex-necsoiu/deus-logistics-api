@@ -65,9 +65,9 @@ func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, n
 			Status:   newStatus.String(),
 			Note:     fmt.Sprintf("Status changed from %s to %s", oldStatus.String(), newStatus.String()),
 		}
-		if _, err := uc.trackingRepo.Create(ctx, trackingInput); err != nil {
+		if _, err := uc.trackingRepo.Append(ctx, trackingInput); err != nil {
 			// Log tracking error but don't fail the status update
-			zerolog.Ctx(ctx).Warn().Err(err).Str("cargo_id", id.String()).Msg("failed to create tracking record")
+			zerolog.Ctx(ctx).Warn().Err(err).Str("cargo_id", id.String()).Msg("failed to append tracking record")
 		}
 	}
 

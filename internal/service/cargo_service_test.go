@@ -44,11 +44,11 @@ func (m *mockCargoRepository) UpdateStatus(ctx context.Context, id uuid.UUID, st
 }
 
 type mockTrackingRepository struct {
-	createFunc func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
+	appendFunc func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
 }
 
-func (m *mockTrackingRepository) Create(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
-	return m.createFunc(ctx, input)
+func (m *mockTrackingRepository) Append(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+	return m.appendFunc(ctx, input)
 }
 
 func (m *mockTrackingRepository) ListByCargoID(_ context.Context, _ uuid.UUID) ([]*tracking.TrackingEntry, error) {
@@ -229,7 +229,7 @@ func TestCargoServiceUpdateCargoStatus(t *testing.T) {
 	}
 
 	mockTracker := &mockTrackingRepository{
-		createFunc: func(_ context.Context, _ tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+			appendFunc: func(_ context.Context, _ tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
 			return &tracking.TrackingEntry{ID: uuid.New()}, nil
 		},
 	}

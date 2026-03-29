@@ -13,12 +13,12 @@ import (
 
 // mockTrackingRepositoryImpl is a full mock implementation of tracking.Repository for testing.
 type mockTrackingRepositoryImpl struct {
-	createFunc      func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
+	appendFunc      func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error)
 	listByCargoFunc func(ctx context.Context, cargoID uuid.UUID) ([]*tracking.TrackingEntry, error)
 }
 
-func (m *mockTrackingRepositoryImpl) Create(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
-	return m.createFunc(ctx, input)
+func (m *mockTrackingRepositoryImpl) Append(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+	return m.appendFunc(ctx, input)
 }
 
 func (m *mockTrackingRepositoryImpl) ListByCargoID(ctx context.Context, cargoID uuid.UUID) ([]*tracking.TrackingEntry, error) {
@@ -32,7 +32,7 @@ func TestTrackingServiceAddEntry(t *testing.T) {
 	cargoID := uuid.New()
 
 	mockRepo := &mockTrackingRepositoryImpl{
-		createFunc: func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+		appendFunc: func(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
 			assert.Equal(t, cargoID, input.CargoID)
 			assert.Equal(t, "Port of Hamburg", input.Location)
 			return &tracking.TrackingEntry{

@@ -21,8 +21,9 @@ func NewTrackingRepository(pool *pgxpool.Pool) *TrackingRepository {
 	return &TrackingRepository{pool: pool}
 }
 
-// Create inserts a new tracking entry into the database (APPEND-ONLY).
-func (r *TrackingRepository) Create(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
+// Append inserts a new tracking entry into the database (APPEND-ONLY).
+// This is the ONLY way to write tracking entries — no updates or deletes allowed.
+func (r *TrackingRepository) Append(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
 	const query = `
 		INSERT INTO tracking_entries (cargo_id, location, status, note, timestamp)
 		VALUES ($1, $2, $3, $4, NOW())

@@ -40,11 +40,11 @@ func NewTrackingService(repo tracking.Repository) *TrackingService {
 //   - DB write to tracking_entries table
 //   - Logs info message with cargo_id and status
 func (s *TrackingService) AddTrackingEntry(ctx context.Context, input tracking.AddTrackingInput) (*tracking.TrackingEntry, error) {
-	entry, err := s.repo.Create(ctx, input)
+	entry, err := s.repo.Append(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("addTrackingEntry: %w", err)
 	}
-	zerolog.Ctx(ctx).Info().Str("cargo_id", input.CargoID.String()).Str("status", input.Status).Msg("tracking entry added")
+	zerolog.Ctx(ctx).Info().Str("cargo_id", input.CargoID.String()).Str("status", input.Status).Msg("tracking entry appended")
 	return entry, nil
 }
 

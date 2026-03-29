@@ -10,9 +10,10 @@ import (
 // Implemented by internal/postgres/tracking_repo.go.
 // This table is APPEND-ONLY — never update or delete entries.
 type Repository interface {
-	// Create persists a new tracking entry. APPEND-ONLY.
+	// Append persists a new tracking entry to the immutable log. APPEND-ONLY.
+	// This is the ONLY way to write to tracking — no updates or deletes allowed.
 	// Returns error if cargo does not exist or DB operation fails.
-	Create(ctx context.Context, input AddTrackingInput) (*TrackingEntry, error)
+	Append(ctx context.Context, input AddTrackingInput) (*TrackingEntry, error)
 
 	// ListByCargoID retrieves all tracking entries for a cargo in chronological order.
 	// Returns empty slice if no entries found.
