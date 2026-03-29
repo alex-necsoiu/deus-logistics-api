@@ -22,7 +22,18 @@ func NewTrackingHandler(service tracking.Service) *TrackingHandler {
 	return &TrackingHandler{service: service}
 }
 
-// AddTrackingEntry handles POST /api/v1/cargoes/:id/tracking
+// AddTrackingEntry godoc
+// @Summary Add a tracking entry
+// @Description Add a new tracking entry for a cargo shipment
+// @Tags tracking
+// @Accept json
+// @Produce json
+// @Param id path string true "Cargo ID (UUID)" format(uuid)
+// @Param request body AddTrackingRequest true "Tracking entry payload"
+// @Success 201 {object} response.SuccessResponse{data=TrackingEntryResponse} "Tracking entry created successfully"
+// @Failure 400 {object} response.ErrorResponse "Invalid request or validation failed"
+// @Failure 404 {object} response.ErrorResponse "Cargo not found"
+// @Router /cargoes/{id}/tracking [post]
 func (h *TrackingHandler) AddTrackingEntry(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger := zerolog.Ctx(ctx)
@@ -100,7 +111,17 @@ func (h *TrackingHandler) AddTrackingEntry(c *gin.Context) {
 	})
 }
 
-// GetTrackingHistory handles GET /api/v1/cargoes/:id/tracking
+// GetTrackingHistory godoc
+// @Summary Get cargo tracking history
+// @Description Retrieve the complete tracking history for a cargo shipment
+// @Tags tracking
+// @Accept json
+// @Produce json
+// @Param id path string true "Cargo ID (UUID)" format(uuid)
+// @Success 200 {object} response.SuccessResponse{data=[]TrackingEntryResponse} "Tracking history retrieved"
+// @Failure 400 {object} response.ErrorResponse "Invalid cargo ID format"
+// @Failure 404 {object} response.ErrorResponse "Cargo not found"
+// @Router /cargoes/{id}/tracking [get]
 func (h *TrackingHandler) GetTrackingHistory(c *gin.Context) {
 	ctx := c.Request.Context()
 

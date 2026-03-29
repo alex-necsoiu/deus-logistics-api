@@ -1,3 +1,14 @@
+// Package main implements the DEUS Logistics API server.
+//
+// @title DEUS Logistics API
+// @version 1.0.0
+// @description A comprehensive API for managing cargo and vessel tracking in logistics operations
+// @termsOfService
+// @contact.name API Support
+// @license.name MIT
+// @host localhost:8080
+// @BasePath /api/v1
+// @schemes http https
 package main
 
 import (
@@ -13,6 +24,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/config"
@@ -20,6 +33,7 @@ import (
 	"github.com/alex-necsoiu/deus-logistics-api/internal/postgres"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/service"
 	transporthttp "github.com/alex-necsoiu/deus-logistics-api/internal/transport/http"
+	_ "github.com/alex-necsoiu/deus-logistics-api/docs"
 )
 
 func main() {
@@ -98,6 +112,10 @@ func main() {
 	// Register all routes
 	transporthttp.Router(engine, pool, cargoApp, vesselSvc, trackingSvc)
 	log.Info().Msg("✓ HTTP routes registered")
+
+	// Setup Swagger documentation
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	log.Info().Msg("✓ Swagger UI available at /swagger/index.html")
 
 	// 11. Create HTTP server
 	server := &http.Server{

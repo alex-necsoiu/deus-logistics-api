@@ -1,0 +1,523 @@
+basePath: /api/v1
+definitions:
+  http.AddTrackingRequest:
+    properties:
+      location:
+        example: Port of Mumbai
+        type: string
+      note:
+        example: Passed customs inspection
+        type: string
+      status:
+        example: in_transit
+        type: string
+    required:
+    - location
+    - status
+    type: object
+  http.CargoResponse:
+    properties:
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      description:
+        example: Laptop shipment
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: Premium Electronics
+        type: string
+      status:
+        example: in_transit
+        type: string
+      updated_at:
+        example: "2024-01-15T14:45:00Z"
+        type: string
+      vessel_id:
+        example: 123e4567-e89b-12d3-a456-426614174001
+        type: string
+      weight:
+        example: 150.5
+        type: number
+    type: object
+  http.CreateCargoRequest:
+    properties:
+      description:
+        example: Laptop shipment
+        type: string
+      name:
+        example: Premium Electronics
+        type: string
+      vessel_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      weight:
+        example: 150.5
+        type: number
+    required:
+    - name
+    - vessel_id
+    - weight
+    type: object
+  http.CreateVesselRequest:
+    properties:
+      capacity:
+        example: 500
+        type: number
+      current_location:
+        example: Port of Singapore
+        type: string
+      name:
+        example: MV Ocean Navigator
+        type: string
+    required:
+    - capacity
+    - current_location
+    - name
+    type: object
+  http.TrackingEntryResponse:
+    properties:
+      cargo_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174002
+        type: string
+      location:
+        example: Port of Mumbai
+        type: string
+      note:
+        example: Passed customs inspection
+        type: string
+      status:
+        example: in_transit
+        type: string
+      timestamp:
+        example: "2024-01-15T12:30:00Z"
+        type: string
+    type: object
+  http.UpdateCargoStatusRequest:
+    properties:
+      status:
+        example: in_transit
+        type: string
+    required:
+    - status
+    type: object
+  http.UpdateVesselLocationRequest:
+    properties:
+      current_location:
+        example: Port of Rotterdam
+        type: string
+    required:
+    - current_location
+    type: object
+  http.VesselResponse:
+    properties:
+      capacity:
+        example: 500
+        type: number
+      created_at:
+        example: "2024-01-01T08:00:00Z"
+        type: string
+      current_location:
+        example: Port of Singapore
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174001
+        type: string
+      name:
+        example: MV Ocean Navigator
+        type: string
+      updated_at:
+        example: "2024-01-15T14:45:00Z"
+        type: string
+    type: object
+  response.ErrorDetail:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+      request_id:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/response.ErrorDetail'
+    type: object
+  response.Meta:
+    properties:
+      request_id:
+        type: string
+    type: object
+  response.SuccessResponse:
+    properties:
+      data: {}
+      meta:
+        $ref: '#/definitions/response.Meta'
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+  description: A comprehensive API for managing cargo and vessel tracking in logistics
+    operations
+  license:
+    name: MIT
+  title: DEUS Logistics API
+  version: 1.0.0
+paths:
+  /cargoes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all cargo shipments in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of cargoes
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/http.CargoResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List all cargoes
+      tags:
+      - cargo
+    post:
+      consumes:
+      - application/json
+      description: Create a new cargo shipment with initial status
+      parameters:
+      - description: Cargo creation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateCargoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Cargo created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.CargoResponse'
+              type: object
+        "400":
+          description: Invalid request or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Vessel not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new cargo
+      tags:
+      - cargo
+  /cargoes/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific cargo shipment by its UUID
+      parameters:
+      - description: Cargo ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cargo found
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.CargoResponse'
+              type: object
+        "400":
+          description: Invalid cargo ID format
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Cargo not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get cargo by ID
+      tags:
+      - cargo
+  /cargoes/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Update the status of a cargo shipment (pending, in_transit, or
+        delivered)
+      parameters:
+      - description: Cargo ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCargoStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.CargoResponse'
+              type: object
+        "400":
+          description: Invalid request or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Cargo not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update cargo status
+      tags:
+      - cargo
+  /cargoes/{id}/tracking:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the complete tracking history for a cargo shipment
+      parameters:
+      - description: Cargo ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tracking history retrieved
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/http.TrackingEntryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid cargo ID format
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Cargo not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get cargo tracking history
+      tags:
+      - tracking
+    post:
+      consumes:
+      - application/json
+      description: Add a new tracking entry for a cargo shipment
+      parameters:
+      - description: Cargo ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Tracking entry payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.AddTrackingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Tracking entry created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.TrackingEntryResponse'
+              type: object
+        "400":
+          description: Invalid request or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Cargo not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Add a tracking entry
+      tags:
+      - tracking
+  /vessels:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all vessels in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of vessels
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/http.VesselResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List all vessels
+      tags:
+      - vessel
+    post:
+      consumes:
+      - application/json
+      description: Create a new vessel with specified capacity and location
+      parameters:
+      - description: Vessel creation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateVesselRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Vessel created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.VesselResponse'
+              type: object
+        "400":
+          description: Invalid request or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new vessel
+      tags:
+      - vessel
+  /vessels/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific vessel by its UUID
+      parameters:
+      - description: Vessel ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Vessel found
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.VesselResponse'
+              type: object
+        "400":
+          description: Invalid vessel ID format
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Vessel not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get vessel by ID
+      tags:
+      - vessel
+  /vessels/{id}/location:
+    patch:
+      consumes:
+      - application/json
+      description: Update the current location of a vessel
+      parameters:
+      - description: Vessel ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Location update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateVesselLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Location updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/http.VesselResponse'
+              type: object
+        "400":
+          description: Invalid request or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Vessel not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update vessel location
+      tags:
+      - vessel
+schemes:
+- http
+- https
+swagger: "2.0"

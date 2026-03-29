@@ -23,7 +23,17 @@ func NewCargoHandler(app *appcargo.CargoApplicationManager) *CargoHandler {
 	return &CargoHandler{app: app}
 }
 
-// CreateCargo handles POST /api/v1/cargoes
+// CreateCargo godoc
+// @Summary Create a new cargo
+// @Description Create a new cargo shipment with initial status
+// @Tags cargo
+// @Accept json
+// @Produce json
+// @Param request body CreateCargoRequest true "Cargo creation payload"
+// @Success 201 {object} response.SuccessResponse{data=CargoResponse} "Cargo created successfully"
+// @Failure 400 {object} response.ErrorResponse "Invalid request or validation failed"
+// @Failure 409 {object} response.ErrorResponse "Vessel not found"
+// @Router /cargoes [post]
 func (h *CargoHandler) CreateCargo(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger := zerolog.Ctx(ctx)
@@ -92,7 +102,17 @@ func (h *CargoHandler) CreateCargo(c *gin.Context) {
 	})
 }
 
-// GetCargo handles GET /api/v1/cargoes/:id
+// GetCargo godoc
+// @Summary Get cargo by ID
+// @Description Retrieve a specific cargo shipment by its UUID
+// @Tags cargo
+// @Accept json
+// @Produce json
+// @Param id path string true "Cargo ID (UUID)" format(uuid)
+// @Success 200 {object} response.SuccessResponse{data=CargoResponse} "Cargo found"
+// @Failure 400 {object} response.ErrorResponse "Invalid cargo ID format"
+// @Failure 404 {object} response.ErrorResponse "Cargo not found"
+// @Router /cargoes/{id} [get]
 func (h *CargoHandler) GetCargo(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -139,7 +159,15 @@ func (h *CargoHandler) GetCargo(c *gin.Context) {
 	})
 }
 
-// ListCargoes handles GET /api/v1/cargoes
+// ListCargoes godoc
+// @Summary List all cargoes
+// @Description Retrieve all cargo shipments in the system
+// @Tags cargo
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.SuccessResponse{data=[]CargoResponse} "List of cargoes"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Router /cargoes [get]
 func (h *CargoHandler) ListCargoes(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -178,7 +206,18 @@ func (h *CargoHandler) ListCargoes(c *gin.Context) {
 	})
 }
 
-// UpdateCargoStatus handles PATCH /api/v1/cargoes/:id/status
+// UpdateCargoStatus godoc
+// @Summary Update cargo status
+// @Description Update the status of a cargo shipment (pending, in_transit, or delivered)
+// @Tags cargo
+// @Accept json
+// @Produce json
+// @Param id path string true "Cargo ID (UUID)" format(uuid)
+// @Param request body UpdateCargoStatusRequest true "Status update payload"
+// @Success 200 {object} response.SuccessResponse{data=CargoResponse} "Status updated successfully"
+// @Failure 400 {object} response.ErrorResponse "Invalid request or validation failed"
+// @Failure 404 {object} response.ErrorResponse "Cargo not found"
+// @Router /cargoes/{id}/status [patch]
 func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger := zerolog.Ctx(ctx)

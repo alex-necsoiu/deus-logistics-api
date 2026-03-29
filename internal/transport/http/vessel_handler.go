@@ -22,7 +22,16 @@ func NewVesselHandler(service vessel.Service) *VesselHandler {
 	return &VesselHandler{service: service}
 }
 
-// CreateVessel handles POST /api/v1/vessels
+// CreateVessel godoc
+// @Summary Create a new vessel
+// @Description Create a new vessel with specified capacity and location
+// @Tags vessel
+// @Accept json
+// @Produce json
+// @Param request body CreateVesselRequest true "Vessel creation payload"
+// @Success 201 {object} response.SuccessResponse{data=VesselResponse} "Vessel created successfully"
+// @Failure 400 {object} response.ErrorResponse "Invalid request or validation failed"
+// @Router /vessels [post]
 func (h *VesselHandler) CreateVessel(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger := zerolog.Ctx(ctx)
@@ -87,7 +96,17 @@ func (h *VesselHandler) CreateVessel(c *gin.Context) {
 	})
 }
 
-// GetVessel handles GET /api/v1/vessels/:id
+// GetVessel godoc
+// @Summary Get vessel by ID
+// @Description Retrieve a specific vessel by its UUID
+// @Tags vessel
+// @Accept json
+// @Produce json
+// @Param id path string true "Vessel ID (UUID)" format(uuid)
+// @Success 200 {object} response.SuccessResponse{data=VesselResponse} "Vessel found"
+// @Failure 400 {object} response.ErrorResponse "Invalid vessel ID format"
+// @Failure 404 {object} response.ErrorResponse "Vessel not found"
+// @Router /vessels/{id} [get]
 func (h *VesselHandler) GetVessel(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -131,7 +150,15 @@ func (h *VesselHandler) GetVessel(c *gin.Context) {
 	})
 }
 
-// ListVessels handles GET /api/v1/vessels
+// ListVessels godoc
+// @Summary List all vessels
+// @Description Retrieve all vessels in the system
+// @Tags vessel
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.SuccessResponse{data=[]VesselResponse} "List of vessels"
+// @Failure 500 {object} response.ErrorResponse "Internal server error"
+// @Router /vessels [get]
 func (h *VesselHandler) ListVessels(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -167,7 +194,18 @@ func (h *VesselHandler) ListVessels(c *gin.Context) {
 	})
 }
 
-// UpdateVesselLocation handles PATCH /api/v1/vessels/:id/location
+// UpdateVesselLocation godoc
+// @Summary Update vessel location
+// @Description Update the current location of a vessel
+// @Tags vessel
+// @Accept json
+// @Produce json
+// @Param id path string true "Vessel ID (UUID)" format(uuid)
+// @Param request body UpdateVesselLocationRequest true "Location update payload"
+// @Success 200 {object} response.SuccessResponse{data=VesselResponse} "Location updated successfully"
+// @Failure 400 {object} response.ErrorResponse "Invalid request or validation failed"
+// @Failure 404 {object} response.ErrorResponse "Vessel not found"
+// @Router /vessels/{id}/location [patch]
 func (h *VesselHandler) UpdateVesselLocation(c *gin.Context) {
 	ctx := c.Request.Context()
 	logger := zerolog.Ctx(ctx)
