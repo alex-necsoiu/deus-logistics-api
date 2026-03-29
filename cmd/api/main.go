@@ -87,7 +87,7 @@ func main() {
 	consumerCtx, consumerCancel := context.WithCancel(context.Background())
 	consumer := events.NewEventConsumer(cfg.KafkaBrokers, cfg.KafkaTopicEvents, "deus-api-consumer", eventRepo)
 	consumer.Start(consumerCtx)
-	defer consumerCancel()  // Cancel context on shutdown — signals consumer to stop
+	defer consumerCancel() // Cancel context on shutdown — signals consumer to stop
 	defer consumer.Stop()
 	log.Info().Msg("✓ Kafka consumer started")
 

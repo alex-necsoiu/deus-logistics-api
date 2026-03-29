@@ -148,5 +148,3 @@ func (h *TrackingHandler) GetTrackingHistory(c *gin.Context) {
 		},
 	})
 }
-
-

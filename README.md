@@ -602,8 +602,8 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 **Alex Necsoiu**
 
 - GitHub: [@alex-necsoiu](https://github.com/alex-necsoiu)
-- LinkedIn: [alex-necsoiu](https://www.linkedin.com/in/alex-necsoiu/)
-- Email: alex@example.com
+- LinkedIn: [alex-necsoiu](https://linkedin.com/in/alex-necsoiu-330261103)
+- Email: axel.necsoiu@gmail.com
 
 ---
 

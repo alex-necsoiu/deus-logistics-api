@@ -13,13 +13,13 @@ const (
 
 // Error messages returned in API responses.
 const (
-	MsgInvalidRequestBody     = "invalid request body"
-	MsgInvalidCargoID         = "invalid cargo id"
-	MsgInvalidVesselID        = "invalid vessel id"
-	MsgFailedListCargoes      = "failed to list cargoes"
-	MsgFailedListVessels      = "failed to list vessels"
-	MsgFailedTrackingHistory  = "failed to get tracking history"
-	MsgInternalServerError    = "internal server error"
+	MsgInvalidRequestBody    = "invalid request body"
+	MsgInvalidCargoID        = "invalid cargo id"
+	MsgInvalidVesselID       = "invalid vessel id"
+	MsgFailedListCargoes     = "failed to list cargoes"
+	MsgFailedListVessels     = "failed to list vessels"
+	MsgFailedTrackingHistory = "failed to get tracking history"
+	MsgInternalServerError   = "internal server error"
 )
 
 // HTTP header and context keys.

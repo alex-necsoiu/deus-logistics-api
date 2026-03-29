@@ -237,5 +237,3 @@ func (h *VesselHandler) UpdateVesselLocation(c *gin.Context) {
 		},
 	})
 }
-
-
