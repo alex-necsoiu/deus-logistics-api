@@ -126,6 +126,7 @@ The `CargoApplicationManager` wires all use cases together:
 func NewCargoApplicationManager(
     cargoRepo CargoRepository,
     trackingRepo TrackingRepository,
+    vesselReader VesselReader,
     publisher EventPublisher,
 ) *CargoApplicationManager {
     return &CargoApplicationManager{
@@ -133,7 +134,7 @@ func NewCargoApplicationManager(
         GetCargo:           NewGetCargoUseCase(cargoRepo),
         ListCargos:         NewListCargosUseCase(cargoRepo),
         ListCargosByVessel: NewListCargosByVesselUseCase(cargoRepo),
-        UpdateStatus:       NewUpdateCargoStatusUseCase(cargoRepo, trackingRepo, publisher),
+        UpdateStatus:       NewUpdateCargoStatusUseCase(cargoRepo, trackingRepo, vesselReader, publisher),
     }
 }
 ```
@@ -188,7 +189,11 @@ mockCargoRepo := new(MockCargoRepository)
 mockCargoRepo.On("GetByID", mock.Anything, id).
     Return(&cargo.Cargo{...}, nil)
 
-appManager := appcargo.NewCargoApplicationManager(mockCargoRepo, ...)
+mockVesselReader := new(MockVesselReader)
+mockVesselReader.On("GetByID", mock.Anything, mock.Anything).
+    Return(&vessel.Vessel{CurrentLocation: "Port of Rotterdam"}, nil)
+
+appManager := appcargo.NewCargoApplicationManager(mockCargoRepo, mockTrackingRepo, mockVesselReader, mockPublisher)
 useCase := appManager.GetCargo
 result, err := useCase.Execute(ctx, id)
 ```

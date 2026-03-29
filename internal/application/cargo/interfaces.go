@@ -5,6 +5,7 @@ import (
 
 	domaincargo "github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
+	domainvessel "github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel"
 	"github.com/google/uuid"
 )
 
@@ -28,4 +29,12 @@ type TrackingRepository interface {
 // EventPublisher defines event publishing operations.
 type EventPublisher interface {
 	PublishStatusChanged(ctx context.Context, event domaincargo.StatusChangedEvent) error
+}
+
+// VesselReader provides read-only access to vessel data for use-case orchestration.
+// Allows application layer to resolve vessel location for tracking records.
+type VesselReader interface {
+	// GetByID retrieves a vessel by ID for location resolution.
+	// Returns domainvessel.ErrNotFound if vessel does not exist.
+	GetByID(ctx context.Context, id uuid.UUID) (*domainvessel.Vessel, error)
 }

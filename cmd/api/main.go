@@ -75,7 +75,7 @@ func main() {
 
 	// 8. Create application layer: use cases for cargo management
 	log.Info().Msg("initializing application layer...")
-	cargoApp := cargo.NewCargoApplicationManager(cargoRepo, trackingRepo, publisher)
+	cargoApp := cargo.NewCargoApplicationManager(cargoRepo, trackingRepo, vesselRepo, publisher)
 	log.Info().Msg("✓ cargo application layer initialized")
 
 	// 9. Create legacy services (for vessel and tracking)

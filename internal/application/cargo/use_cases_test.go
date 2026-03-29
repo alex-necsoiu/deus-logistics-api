@@ -410,7 +410,7 @@ func TestUpdateCargoStatusUseCase(t *testing.T) {
 			mockRepo := new(MockCargoRepository)
 			tt.setupMock(mockRepo)
 
-			uc := NewUpdateCargoStatusUseCase(mockRepo, nil, nil)
+			uc := NewUpdateCargoStatusUseCase(mockRepo, nil, nil, nil)
 			cargo, err := uc.Execute(ctx, tt.cargoID, tt.newStatus)
 
 			if tt.wantErr {

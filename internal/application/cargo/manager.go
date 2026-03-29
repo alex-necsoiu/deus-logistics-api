@@ -14,6 +14,7 @@ type CargoApplicationManager struct {
 func NewCargoApplicationManager(
 	cargoRepo CargoRepository,
 	trackingRepo TrackingRepository,
+	vesselReader VesselReader,
 	publisher EventPublisher,
 ) *CargoApplicationManager {
 	return &CargoApplicationManager{
@@ -21,6 +22,6 @@ func NewCargoApplicationManager(
 		GetCargo:           NewGetCargoUseCase(cargoRepo),
 		ListCargos:         NewListCargosUseCase(cargoRepo),
 		ListCargosByVessel: NewListCargosByVesselUseCase(cargoRepo),
-		UpdateStatus:       NewUpdateCargoStatusUseCase(cargoRepo, trackingRepo, publisher),
+		UpdateStatus:       NewUpdateCargoStatusUseCase(cargoRepo, trackingRepo, vesselReader, publisher),
 	}
 }

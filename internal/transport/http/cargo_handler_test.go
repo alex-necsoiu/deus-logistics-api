@@ -18,6 +18,7 @@ import (
 	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
+	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
@@ -89,6 +90,19 @@ func (m *MockTrackingRepository) Append(ctx context.Context, input tracking.AddT
 	return args.Get(0).(*tracking.TrackingEntry), args.Error(1)
 }
 
+// MockVesselReader mocks vessel reader for testing
+type MockVesselReader struct {
+	mock.Mock
+}
+
+func (m *MockVesselReader) GetByID(ctx context.Context, id uuid.UUID) (*vessel.Vessel, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*vessel.Vessel), args.Error(1)
+}
+
 func setupTestRouter(t *testing.T) (*gin.Engine, *MockCargoRepository) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
@@ -96,6 +110,7 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *MockCargoRepository) {
 	mockCargoRepo := new(MockCargoRepository)
 	mockPublisher := new(MockEventPublisher)
 	mockTrackingRepo := new(MockTrackingRepository)
+	mockVesselReader := new(MockVesselReader)
 
 	// Set up default behavior for tracking repo: allow any Create calls
 	mockTrackingRepo.On("Append", mock.Anything, mock.Anything).
@@ -105,8 +120,12 @@ func setupTestRouter(t *testing.T) (*gin.Engine, *MockCargoRepository) {
 	mockPublisher.On("PublishStatusChanged", mock.Anything, mock.Anything).
 		Return(nil)
 
+	// Set up default behavior for vessel reader: allow any GetByID calls
+	mockVesselReader.On("GetByID", mock.Anything, mock.Anything).
+		Return(&vessel.Vessel{CurrentLocation: "unknown"}, nil)
+
 	// Create application manager with real use cases and mocked repositories
-	appManager := appcargo.NewCargoApplicationManager(mockCargoRepo, mockTrackingRepo, mockPublisher)
+	appManager := appcargo.NewCargoApplicationManager(mockCargoRepo, mockTrackingRepo, mockVesselReader, mockPublisher)
 	handler := NewCargoHandler(appManager)
 
 	router := gin.New()

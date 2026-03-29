@@ -15,6 +15,7 @@ import (
 type UpdateCargoStatusUseCase struct {
 	cargoRepo    CargoRepository
 	trackingRepo TrackingRepository
+	vesselReader VesselReader
 	publisher    EventPublisher
 }
 
@@ -22,11 +23,13 @@ type UpdateCargoStatusUseCase struct {
 func NewUpdateCargoStatusUseCase(
 	cargoRepo CargoRepository,
 	trackingRepo TrackingRepository,
+	vesselReader VesselReader,
 	publisher EventPublisher,
 ) *UpdateCargoStatusUseCase {
 	return &UpdateCargoStatusUseCase{
 		cargoRepo:    cargoRepo,
 		trackingRepo: trackingRepo,
+		vesselReader: vesselReader,
 		publisher:    publisher,
 	}
 }
@@ -80,9 +83,17 @@ func (uc *UpdateCargoStatusUseCase) Execute(ctx context.Context, id uuid.UUID, n
 
 	// Orchestration: append tracking event (not domain concern)
 	if uc.trackingRepo != nil {
+		// Resolve vessel location for tracking record
+		location := "unknown"
+		if uc.vesselReader != nil {
+			if v, err := uc.vesselReader.GetByID(ctx, currentCargo.VesselID); err == nil {
+				location = v.CurrentLocation
+			}
+		}
+
 		trackingInput := tracking.AddTrackingInput{
 			CargoID:  id,
-			Location: "Unknown",
+			Location: location,
 			Status:   newStatus.String(),
 			Note:     fmt.Sprintf("Status changed from %s to %s", oldStatus.String(), newStatus.String()),
 		}
