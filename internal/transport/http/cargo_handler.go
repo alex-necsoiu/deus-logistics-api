@@ -254,6 +254,9 @@ func mapErrorToStatus(errMsg string) int {
 		return http.StatusNotFound
 	case cargo.ErrInvalidInput.Error(), cargo.ErrInvalidStatus.Error():
 		return http.StatusBadRequest
+	case cargo.ErrInvalidTransition.Error():
+		// 422 Unprocessable Entity: Valid request but business logic doesn't allow this action
+		return http.StatusUnprocessableEntity
 	default:
 		return http.StatusInternalServerError
 	}
@@ -268,6 +271,8 @@ func mapErrorToCode(errMsg string) string {
 		return response.CodeInvalidInput
 	case cargo.ErrInvalidStatus.Error():
 		return response.CodeInvalidStatus
+	case cargo.ErrInvalidTransition.Error():
+		return response.CodeInvalidStatus // Reuse invalid status code for invalid transitions
 	default:
 		return response.CodeInternalError
 	}

@@ -50,6 +50,64 @@ func (c *Cargo) IsDelivered() bool { return c.Status == CargoStatusDelivered }
 // IsInTransit returns true if the cargo is currently being transported.
 func (c *Cargo) IsInTransit() bool { return c.Status == CargoStatusInTransit }
 
+// UpdateStatus transitions the cargo to a new status with validation.
+// Valid transitions are:
+//   - pending → in_transit
+//   - in_transit → delivered
+//
+// Any other transition (including attempting to move backward) returns ErrInvalidTransition.
+// This ensures the domain model enforces business rules, not services or handlers.
+func (c *Cargo) UpdateStatus(newStatus CargoStatus) error {
+	// Validate the new status is a recognized value
+	if !newStatus.IsValid() {
+		return ErrInvalidStatus
+	}
+
+	// Enforce valid state transitions
+	switch c.Status {
+	case CargoStatusPending:
+		// From pending, only transition to in_transit is allowed
+		if newStatus != CargoStatusInTransit {
+			return ErrInvalidTransition
+		}
+	case CargoStatusInTransit:
+		// From in_transit, only transition to delivered is allowed
+		if newStatus != CargoStatusDelivered {
+			return ErrInvalidTransition
+		}
+	case CargoStatusDelivered:
+		// From delivered, no further transitions are allowed
+		return ErrInvalidTransition
+	default:
+		// This should never happen if IsValid() is working, but defend against it
+		return ErrInvalidStatus
+	}
+
+	// Transition is valid
+	c.Status = newStatus
+	c.UpdatedAt = time.Now()
+	return nil
+}
+
+// CanTransitionTo checks if a transition to newStatus is allowed without modifying state.
+// Returns true if the transition is valid, false otherwise.
+func (c *Cargo) CanTransitionTo(newStatus CargoStatus) bool {
+	if !newStatus.IsValid() {
+		return false
+	}
+
+	switch c.Status {
+	case CargoStatusPending:
+		return newStatus == CargoStatusInTransit
+	case CargoStatusInTransit:
+		return newStatus == CargoStatusDelivered
+	case CargoStatusDelivered:
+		return false
+	default:
+		return false
+	}
+}
+
 // CreateCargoInput contains validated input for creating a new cargo record.
 type CreateCargoInput struct {
 	Name        string

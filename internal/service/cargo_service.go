@@ -80,30 +80,45 @@ func (s *CargoService) ListCargoByVesselID(ctx context.Context, vesselID uuid.UU
 	return cargoes, nil
 }
 
-// UpdateCargoStatus transitions cargo to a new status.
+// UpdateCargoStatus transitions cargo to a new status using domain-enforced state machine.
 func (s *CargoService) UpdateCargoStatus(ctx context.Context, id uuid.UUID, status cargo.CargoStatus) (*cargo.Cargo, error) {
+	// Quick validation: status must be a recognized value before attempting database lookup
 	if !status.IsValid() {
 		return nil, cargo.ErrInvalidStatus
 	}
+
+	// Get current cargo
 	currentCargo, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("updateCargoStatus: %w", err)
 	}
+
+	// Enforce state machine transitions at domain level
 	oldStatus := currentCargo.Status
-	updatedCargo, err := s.repo.UpdateStatus(ctx, id, status)
+	if err := currentCargo.UpdateStatus(status); err != nil {
+		// Return domain-level error directly (invalid transition)
+		return nil, err
+	}
+
+	// Persist transitioned cargo to database
+	updatedCargo, err := s.repo.UpdateStatus(ctx, id, currentCargo.Status)
 	if err != nil {
 		return nil, fmt.Errorf("updateCargoStatus: %w", err)
 	}
+
+	// Create tracking record for the status change
 	if s.tracker != nil {
 		trackingInput := tracking.AddTrackingInput{CargoID: id, Location: "Unknown", Status: status.String(), Note: fmt.Sprintf("Status changed from %s to %s", oldStatus.String(), status.String())}
 		_, _ = s.tracker.Create(ctx, trackingInput)
 	}
+
 	// Fire-and-forget Kafka publish: errors are logged by producer but must not fail the HTTP response.
 	// This ensures Kafka outages don't impact the API SLA while maintaining observability.
 	if s.publisher != nil {
 		event := cargo.StatusChangedEvent{ID: uuid.New().String(), EventType: cargo.EventTypeStatusChanged, CargoID: id.String(), OldStatus: oldStatus, NewStatus: status, Timestamp: updatedCargo.UpdatedAt}
 		_ = s.publisher.PublishStatusChanged(ctx, event)
 	}
+
 	zerolog.Ctx(ctx).Info().Str("cargo_id", id.String()).Str("old_status", oldStatus.String()).Str("new_status", status.String()).Msg("cargo status updated")
 	return updatedCargo, nil
 }

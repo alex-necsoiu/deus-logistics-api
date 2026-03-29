@@ -11,4 +11,6 @@ var (
 	ErrInvalidStatus = errors.New("invalid cargo status")
 	// ErrInvalidInput is returned when request input validation fails.
 	ErrInvalidInput = errors.New("invalid input")
+	// ErrInvalidTransition is returned when a cargo status transition is not allowed.
+	ErrInvalidTransition = errors.New("invalid status transition")
 )
