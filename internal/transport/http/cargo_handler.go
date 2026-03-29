@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +9,7 @@ import (
 
 	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
+	httperrors "github.com/alex-necsoiu/deus-logistics-api/internal/errors"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
@@ -64,10 +64,10 @@ func (h *CargoHandler) CreateCargo(c *gin.Context) {
 	// Execute use case: orchestration and persistence
 	result, err := h.app.CreateCargo.Execute(ctx, input)
 	if err != nil {
-		status := mapErrorToStatus(err)
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -111,10 +111,10 @@ func (h *CargoHandler) GetCargo(c *gin.Context) {
 	// Execute use case: retrieve cargo
 	result, err := h.app.GetCargo.Execute(ctx, id)
 	if err != nil {
-		status := mapErrorToStatus(err)
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -225,10 +225,10 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 	// Execute use case: orchestrates domain validation, persistence, tracking, and events
 	result, err := h.app.UpdateStatus.Execute(ctx, id, newStatus)
 	if err != nil {
-		status := mapErrorToStatus(err)
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -254,30 +254,13 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 }
 
 // mapErrorToStatus maps domain errors to HTTP status codes using error comparison.
+// DEPRECATED: Use httperrors.MapErrorToHTTPStatus instead (central error mapping).
 func mapErrorToStatus(err error) int {
-	switch {
-	case errors.Is(err, cargo.ErrNotFound):
-		return http.StatusNotFound
-	case errors.Is(err, cargo.ErrInvalidInput), errors.Is(err, cargo.ErrInvalidStatus):
-		return http.StatusBadRequest
-	case errors.Is(err, cargo.ErrInvalidTransition):
-		// 422 Unprocessable Entity: Valid request but business logic doesn't allow this action
-		return http.StatusUnprocessableEntity
-	default:
-		return http.StatusInternalServerError
-	}
+	return httperrors.MapErrorToHTTPStatus(err)
 }
 
 // mapErrorToCode maps domain errors to error codes using error comparison.
+// DEPRECATED: Use httperrors.MapErrorToErrorCode instead (central error mapping).
 func mapErrorToCode(err error) string {
-	switch {
-	case errors.Is(err, cargo.ErrNotFound):
-		return response.CodeCargoNotFound
-	case errors.Is(err, cargo.ErrInvalidInput):
-		return response.CodeInvalidInput
-	case errors.Is(err, cargo.ErrInvalidStatus), errors.Is(err, cargo.ErrInvalidTransition):
-		return response.CodeInvalidStatus
-	default:
-		return response.CodeInternalError
-	}
+	return string(httperrors.MapErrorToErrorCode(err))
 }

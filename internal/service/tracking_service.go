@@ -63,7 +63,7 @@ func (s *TrackingService) AddTrackingEntry(ctx context.Context, input tracking.A
 //   - DB read from tracking_entries table
 func (s *TrackingService) GetTrackingHistory(ctx context.Context, cargoID uuid.UUID) ([]*tracking.TrackingEntry, error) {
 	if cargoID == uuid.Nil {
-		return nil, tracking.ErrInvalidEntry
+		return nil, fmt.Errorf("getTrackingHistory: %w", tracking.ErrInvalidEntry)
 	}
 	entries, err := s.repo.ListByCargoID(ctx, cargoID)
 	if err != nil {
