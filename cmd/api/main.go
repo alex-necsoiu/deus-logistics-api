@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/config"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/events"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/postgres"
@@ -72,25 +73,29 @@ func main() {
 	defer publisher.Close()
 	log.Info().Str("brokers", fmt.Sprintf("%v", cfg.KafkaBrokers)).Str("topic", cfg.KafkaTopicEvents).Msg("✓ Kafka producer ready")
 
-	// 8. Create domain services
-	cargoSvc := service.NewCargoService(cargoRepo, publisher, trackingRepo)
+	// 8. Create application layer: use cases for cargo management
+	log.Info().Msg("initializing application layer...")
+	cargoApp := cargo.NewCargoApplicationManager(cargoRepo, trackingRepo, publisher)
+	log.Info().Msg("✓ cargo application layer initialized")
+
+	// 9. Create legacy services (for vessel and tracking)
 	vesselSvc := service.NewVesselService(vesselRepo)
 	trackingSvc := service.NewTrackingService(trackingRepo)
-	log.Info().Msg("✓ domain services initialized")
+	log.Info().Msg("✓ legacy services initialized")
 
-	// 9. Create and start Kafka consumer
+	// 10. Create and start Kafka consumer
 	log.Info().Msg("initializing Kafka consumer...")
 	consumer := events.NewEventConsumer(cfg.KafkaBrokers, cfg.KafkaTopicEvents, "deus-api-consumer", eventRepo)
 	consumer.Start(context.Background())
 	defer consumer.Stop()
 	log.Info().Msg("✓ Kafka consumer started")
 
-	// 10. Setup HTTP router
+	// 11. Setup HTTP router
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 
 	// Register all routes
-	transporthttp.Router(engine, cargoSvc, vesselSvc, trackingSvc)
+	transporthttp.Router(engine, cargoApp, vesselSvc, trackingSvc)
 	log.Info().Msg("✓ HTTP routes registered")
 
 	// 11. Create HTTP server

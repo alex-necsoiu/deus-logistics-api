@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
+	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
@@ -16,7 +16,7 @@ import (
 // Router registers all HTTP routes and middleware.
 func Router(
 	engine *gin.Engine,
-	cargoSvc cargo.Service,
+	cargoApp *appcargo.CargoApplicationManager,
 	vesselSvc vessel.Service,
 	trackingSvc tracking.Service,
 ) {
@@ -32,8 +32,8 @@ func Router(
 	// API routes
 	api := engine.Group("/api/v1")
 
-	// Cargo routes
-	cargoHandler := NewCargoHandler(cargoSvc)
+	// Cargo routes - using application layer use cases
+	cargoHandler := NewCargoHandler(cargoApp)
 	api.POST("/cargoes", cargoHandler.CreateCargo)
 	api.GET("/cargoes", cargoHandler.ListCargoes)
 	api.GET("/cargoes/:id", cargoHandler.GetCargo)

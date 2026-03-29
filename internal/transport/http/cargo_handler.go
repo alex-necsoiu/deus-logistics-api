@@ -1,24 +1,26 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
 // CargoHandler provides HTTP handlers for cargo operations.
 type CargoHandler struct {
-	service cargo.Service
+	app *appcargo.CargoApplicationManager
 }
 
-// NewCargoHandler creates a new cargo handler.
-func NewCargoHandler(service cargo.Service) *CargoHandler {
-	return &CargoHandler{service: service}
+// NewCargoHandler creates a new cargo handler with application layer use cases.
+func NewCargoHandler(app *appcargo.CargoApplicationManager) *CargoHandler {
+	return &CargoHandler{app: app}
 }
 
 // CreateCargo handles POST /api/v1/cargoes
@@ -59,12 +61,13 @@ func (h *CargoHandler) CreateCargo(c *gin.Context) {
 		VesselID:    req.VesselID,
 	}
 
-	result, err := h.service.CreateCargo(ctx, input)
+	// Execute use case: orchestration and persistence
+	result, err := h.app.CreateCargo.Execute(ctx, input)
 	if err != nil {
-		status := mapErrorToStatus(err.Error())
+		status := mapErrorToStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err.Error()),
+				Code:      mapErrorToCode(err),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -105,12 +108,13 @@ func (h *CargoHandler) GetCargo(c *gin.Context) {
 		return
 	}
 
-	result, err := h.service.GetCargo(ctx, id)
+	// Execute use case: retrieve cargo
+	result, err := h.app.GetCargo.Execute(ctx, id)
 	if err != nil {
-		status := mapErrorToStatus(err.Error())
+		status := mapErrorToStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err.Error()),
+				Code:      mapErrorToCode(err),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -139,7 +143,8 @@ func (h *CargoHandler) GetCargo(c *gin.Context) {
 func (h *CargoHandler) ListCargoes(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	result, err := h.service.ListCargoes(ctx)
+	// Execute use case: list all cargos
+	result, err := h.app.ListCargos.Execute(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Error: response.ErrorDetail{
@@ -203,7 +208,7 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 		return
 	}
 
-	// Validate business rules
+	// Validate request parameters
 	if err := req.Validate(); err != nil {
 		logger.Error().Err(err).Msg("validation failed")
 		c.JSON(http.StatusBadRequest, response.ErrorResponse{
@@ -216,13 +221,14 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 		return
 	}
 
-	status := cargo.CargoStatus(req.Status)
-	result, err := h.service.UpdateCargoStatus(ctx, id, status)
+	newStatus := cargo.CargoStatus(req.Status)
+	// Execute use case: orchestrates domain validation, persistence, tracking, and events
+	result, err := h.app.UpdateStatus.Execute(ctx, id, newStatus)
 	if err != nil {
-		status := mapErrorToStatus(err.Error())
+		status := mapErrorToStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapErrorToCode(err.Error()),
+				Code:      mapErrorToCode(err),
 				Message:   err.Error(),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
@@ -247,14 +253,14 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 	})
 }
 
-// mapErrorToStatus maps domain errors to HTTP status codes.
-func mapErrorToStatus(errMsg string) int {
-	switch errMsg {
-	case cargo.ErrNotFound.Error():
+// mapErrorToStatus maps domain errors to HTTP status codes using error comparison.
+func mapErrorToStatus(err error) int {
+	switch {
+	case errors.Is(err, cargo.ErrNotFound):
 		return http.StatusNotFound
-	case cargo.ErrInvalidInput.Error(), cargo.ErrInvalidStatus.Error():
+	case errors.Is(err, cargo.ErrInvalidInput), errors.Is(err, cargo.ErrInvalidStatus):
 		return http.StatusBadRequest
-	case cargo.ErrInvalidTransition.Error():
+	case errors.Is(err, cargo.ErrInvalidTransition):
 		// 422 Unprocessable Entity: Valid request but business logic doesn't allow this action
 		return http.StatusUnprocessableEntity
 	default:
@@ -262,17 +268,15 @@ func mapErrorToStatus(errMsg string) int {
 	}
 }
 
-// mapErrorToCode maps domain errors to error codes.
-func mapErrorToCode(errMsg string) string {
-	switch errMsg {
-	case cargo.ErrNotFound.Error():
+// mapErrorToCode maps domain errors to error codes using error comparison.
+func mapErrorToCode(err error) string {
+	switch {
+	case errors.Is(err, cargo.ErrNotFound):
 		return response.CodeCargoNotFound
-	case cargo.ErrInvalidInput.Error():
+	case errors.Is(err, cargo.ErrInvalidInput):
 		return response.CodeInvalidInput
-	case cargo.ErrInvalidStatus.Error():
+	case errors.Is(err, cargo.ErrInvalidStatus), errors.Is(err, cargo.ErrInvalidTransition):
 		return response.CodeInvalidStatus
-	case cargo.ErrInvalidTransition.Error():
-		return response.CodeInvalidStatus // Reuse invalid status code for invalid transitions
 	default:
 		return response.CodeInternalError
 	}
