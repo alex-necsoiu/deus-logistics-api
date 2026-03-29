@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/vessel"
+	httperrors "github.com/alex-necsoiu/deus-logistics-api/internal/errors"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
@@ -60,11 +61,11 @@ func (h *VesselHandler) CreateVessel(c *gin.Context) {
 
 	result, err := h.service.CreateVessel(ctx, input)
 	if err != nil {
-		status := mapVesselErrorToStatus(err.Error())
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapVesselErrorToCode(err.Error()),
-				Message:   err.Error(),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
+				Message:   httperrors.MapErrorToErrorMessage(err),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
 		})
@@ -104,11 +105,11 @@ func (h *VesselHandler) GetVessel(c *gin.Context) {
 
 	result, err := h.service.GetVessel(ctx, id)
 	if err != nil {
-		status := mapVesselErrorToStatus(err.Error())
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapVesselErrorToCode(err.Error()),
-				Message:   err.Error(),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
+				Message:   httperrors.MapErrorToErrorMessage(err),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
 		})
@@ -211,11 +212,11 @@ func (h *VesselHandler) UpdateVesselLocation(c *gin.Context) {
 
 	result, err := h.service.UpdateVesselLocation(ctx, id, req.CurrentLocation)
 	if err != nil {
-		status := mapVesselErrorToStatus(err.Error())
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapVesselErrorToCode(err.Error()),
-				Message:   err.Error(),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
+				Message:   httperrors.MapErrorToErrorMessage(err),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
 		})
@@ -237,30 +238,4 @@ func (h *VesselHandler) UpdateVesselLocation(c *gin.Context) {
 	})
 }
 
-// mapVesselErrorToStatus maps vessel domain errors to HTTP status codes.
-func mapVesselErrorToStatus(errMsg string) int {
-	switch errMsg {
-	case vessel.ErrNotFound.Error():
-		return http.StatusNotFound
-	case vessel.ErrInvalidInput.Error():
-		return http.StatusBadRequest
-	case vessel.ErrCapacityExceeded.Error():
-		return http.StatusUnprocessableEntity
-	default:
-		return http.StatusInternalServerError
-	}
-}
 
-// mapVesselErrorToCode maps vessel domain errors to error codes.
-func mapVesselErrorToCode(errMsg string) string {
-	switch errMsg {
-	case vessel.ErrNotFound.Error():
-		return response.CodeVesselNotFound
-	case vessel.ErrInvalidInput.Error():
-		return response.CodeInvalidInput
-	case vessel.ErrCapacityExceeded.Error():
-		return response.CodeCapacityExceeded
-	default:
-		return response.CodeInternalError
-	}
-}

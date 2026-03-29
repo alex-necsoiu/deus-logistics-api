@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-up docker-down migrate sqlc lint install-tools
+.PHONY: help build run test clean docker-up docker-run docker-down migrate sqlc lint install-tools
 
 # Variables
 BINARY_NAME=deus-api
@@ -14,6 +14,7 @@ help:
 	@echo "  make test             Run all tests"
 	@echo "  make test-coverage    Run tests with coverage report"
 	@echo "  make docker-up        Start postgres + kafka + zookeeper with docker-compose"
+	@echo "  make docker-run       Alias for docker-up (start full stack)"
 	@echo "  make docker-down      Stop all containers"
 	@echo "  make migrate-up       Run pending database migrations"
 	@echo "  make migrate-down     Rollback last database migration"
@@ -60,6 +61,9 @@ migrate-down:
 docker-up:
 	@echo "Starting docker-compose services..."
 	$(DOCKER_COMPOSE) up -d
+
+docker-run: docker-up
+	@echo "Full stack is running at http://localhost:8080"
 
 docker-down:
 	@echo "Stopping docker-compose services..."

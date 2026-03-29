@@ -83,10 +83,11 @@ func main() {
 	trackingSvc := service.NewTrackingService(trackingRepo)
 	log.Info().Msg("✓ legacy services initialized")
 
-	// 10. Create and start Kafka consumer
-	log.Info().Msg("initializing Kafka consumer...")
+	// 10. Create consumer context (cancellable for graceful shutdown)
+	consumerCtx, consumerCancel := context.WithCancel(context.Background())
 	consumer := events.NewEventConsumer(cfg.KafkaBrokers, cfg.KafkaTopicEvents, "deus-api-consumer", eventRepo)
-	consumer.Start(context.Background())
+	consumer.Start(consumerCtx)
+	defer consumerCancel()  // Cancel context on shutdown — signals consumer to stop
 	defer consumer.Stop()
 	log.Info().Msg("✓ Kafka consumer started")
 

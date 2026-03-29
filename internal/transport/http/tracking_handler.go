@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
+	httperrors "github.com/alex-necsoiu/deus-logistics-api/internal/errors"
 	"github.com/alex-necsoiu/deus-logistics-api/pkg/response"
 )
 
@@ -73,11 +74,11 @@ func (h *TrackingHandler) AddTrackingEntry(c *gin.Context) {
 
 	result, err := h.service.AddTrackingEntry(ctx, input)
 	if err != nil {
-		status := mapTrackingErrorToStatus(err.Error())
+		status := httperrors.MapErrorToHTTPStatus(err)
 		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      mapTrackingErrorToCode(err.Error()),
-				Message:   err.Error(),
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
+				Message:   httperrors.MapErrorToErrorMessage(err),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
 		})
@@ -117,10 +118,11 @@ func (h *TrackingHandler) GetTrackingHistory(c *gin.Context) {
 
 	result, err := h.service.GetTrackingHistory(ctx, cargoID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+		status := httperrors.MapErrorToHTTPStatus(err)
+		c.JSON(status, response.ErrorResponse{
 			Error: response.ErrorDetail{
-				Code:      response.CodeInternalError,
-				Message:   response.MsgFailedTrackingHistory,
+				Code:      string(httperrors.MapErrorToErrorCode(err)),
+				Message:   httperrors.MapErrorToErrorMessage(err),
 				RequestID: c.GetString(response.CtxRequestID),
 			},
 		})
@@ -147,26 +149,4 @@ func (h *TrackingHandler) GetTrackingHistory(c *gin.Context) {
 	})
 }
 
-// mapTrackingErrorToStatus maps tracking domain errors to HTTP status codes.
-func mapTrackingErrorToStatus(errMsg string) int {
-	switch errMsg {
-	case tracking.ErrCargoNotFound.Error():
-		return http.StatusNotFound
-	case tracking.ErrInvalidEntry.Error():
-		return http.StatusBadRequest
-	default:
-		return http.StatusInternalServerError
-	}
-}
 
-// mapTrackingErrorToCode maps tracking domain errors to error codes.
-func mapTrackingErrorToCode(errMsg string) string {
-	switch errMsg {
-	case tracking.ErrCargoNotFound.Error():
-		return response.CodeCargoNotFound
-	case tracking.ErrInvalidEntry.Error():
-		return response.CodeInvalidEntry
-	default:
-		return response.CodeInternalError
-	}
-}

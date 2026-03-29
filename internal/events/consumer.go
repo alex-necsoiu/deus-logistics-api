@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,12 +13,31 @@ import (
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/cargo"
 )
 
+// EventConsumer consumes cargo status change events from Kafka and persists them to the database.
+// Uses a background goroutine to process events asynchronously.
+// Safe for concurrent Stop() calls via sync.Once protection.
 type EventConsumer struct {
-	reader *kafka.Reader
-	repo   cargo.EventRepository
-	done   chan struct{}
+	reader   *kafka.Reader
+	repo     cargo.EventRepository
+	done     chan struct{}
+	stopOnce sync.Once
 }
 
+// NewEventConsumer creates a new Kafka event consumer.
+//
+// Inputs:
+//
+//	brokers - list of Kafka broker addresses (comma-separated hosts:ports)
+//	topic   - Kafka topic name to consume from
+//	groupID - consumer group ID for coordinated consumption
+//	repo    - repository for persisting cargo events to database
+//
+// Returns:
+//
+//	*EventConsumer configured to read from the specified topic
+//
+// Side effects:
+//   - Creates a new kafka.Reader instance
 func NewEventConsumer(brokers []string, topic string, groupID string, repo cargo.EventRepository) *EventConsumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        brokers,
@@ -32,6 +52,19 @@ func NewEventConsumer(brokers []string, topic string, groupID string, repo cargo
 	}
 }
 
+// Start begins consuming messages from Kafka in a background goroutine.
+// Processes StatusChangedEvent messages and persists them to the event repository.
+// Must be paired with Stop() to cleanly shutdown the consumer.
+//
+// Inputs:
+//
+//	ctx - context for cancellation and logging propagation
+//
+// Side effects:
+//   - Launches a background goroutine that reads from Kafka
+//   - Persists cargo.CargoEvent to the database on each successful message
+//
+// Note: The consumer should be stopped by calling Stop() during graceful shutdown.
 func (c *EventConsumer) Start(ctx context.Context) {
 	go func() {
 		for {
@@ -99,7 +132,19 @@ func (c *EventConsumer) Start(ctx context.Context) {
 	}()
 }
 
+// Stop signals the consumer to stop reading messages and closes the Kafka reader.
+// Safe to call multiple times via sync.Once protection (only closes channel once).
+//
+// Returns:
+//
+//	Error if the Kafka reader fails to close
+//
+// Side effects:
+//   - Signals the consumer goroutine to stop via closed done channel
+//   - Closes the underlying kafka.Reader connection
 func (c *EventConsumer) Stop() error {
-	close(c.done)
+	c.stopOnce.Do(func() {
+		close(c.done)
+	})
 	return c.reader.Close()
 }

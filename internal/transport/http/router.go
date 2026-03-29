@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	appcargo "github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/domain/tracking"
@@ -78,26 +79,24 @@ func requestIDMiddleware() gin.HandlerFunc {
 }
 
 // loggingMiddleware logs incoming requests and responses with structured JSON format.
-// Adds request_id to all log entries.
+// Attaches enriched logger with request_id to context so downstream handlers can use
+// zerolog.Ctx(ctx) and produce real log output.
 func loggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Ensure logger has request_id in context
-		ctx := c.Request.Context()
 		requestID := c.GetString(response.CtxRequestID)
-		if requestID != "" {
-			ctx = context.WithValue(ctx, response.CtxRequestID, requestID)
-			c.Request = c.Request.WithContext(ctx)
-		}
+
+		// Attach enriched logger to context so zerolog.Ctx(ctx) works downstream
+		logger := log.Logger.With().Str("request_id", requestID).Logger()
+		ctx := logger.WithContext(c.Request.Context())
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 
-		log := zerolog.Ctx(c.Request.Context())
-		log.Info().
+		zerolog.Ctx(c.Request.Context()).Info().
 			Str("method", c.Request.Method).
 			Str("path", c.Request.URL.Path).
 			Int("status", c.Writer.Status()).
 			Int("content_length", c.Writer.Size()).
-			Str("request_id", requestID).
 			Msg("http request completed")
 	}
 }
