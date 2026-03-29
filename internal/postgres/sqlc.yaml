@@ -1,0 +1,13 @@
+version: "1"
+sql:
+  - engine: "postgresql"
+    queries: "./queries/"
+    schema: "./schema.sql"
+    gen:
+      go:
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_prepared_queries: true
+        emit_methods: true
+        out: "./sqlc"
+        package: "sqlc"
