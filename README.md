@@ -1,132 +1,176 @@
 # DEUS Logistics API
 
-A production-grade backend service for a logistics company that ships goods via vessels.
-
-**Status:** Bootstrapping (Task #1 in progress)
+A Go-based REST API for managing cargo shipments, vessels, and tracking history. Implements clean architecture with domain-driven design, event-driven patterns, and production-grade operational practices.
 
 ---
 
-## Quick Start
+## Features
 
-### Prerequisites
-- Go 1.21+
-- Docker & Docker Compose
-- PostgreSQL 15
-- Kafka (via docker-compose)
-
-### Setup
-
-```bash
-# Install dependencies
-go mod download
-
-# Install build tools
-make install-tools
-
-# Start services (postgres + kafka)
-make docker-up
-
-# Run migrations
-make migrate-up
-
-# Build and run API
-make run
-```
-
-Server starts on `http://localhost:8080`
+- **Cargo Management** — Create, retrieve, list, and update cargo shipment status with validated state transitions
+- **Vessel Management** — Create, retrieve, list, and update vessel location
+- **Append-Only Tracking History** — Immutable tracking entries per cargo shipment with database-level constraints
+- **Event-Driven Architecture** — Kafka producer/consumer for cargo status change events
+- **Structured Logging** — JSON-formatted logs with request tracing via context propagation
+- **REST API** — HTTP handlers with input validation and consistent error responses
+- **Docker Support** — Full containerization with PostgreSQL, Kafka, and Zookeeper
 
 ---
 
 ## Architecture
 
-This project follows **Clean Architecture** with:
-- **Domain-per-entity** packages (Pandora Exchange pattern)
-- **sqlc** for type-safe, compile-time-verified database access
-- **Single binary** API + in-process Kafka consumer goroutine
-- **Table-driven tests** with mockgen mocks + testcontainers
+This project follows **Clean Architecture** with clear separation of concerns across layers:
 
-See [.copilot/ARCHITECTURE.md](.copilot/ARCHITECTURE.md) for detailed specification.
+```
+HTTP Request
+    ↓
+HTTP Handler (Transport)
+    ↓
+Use Case (Application)
+    ↓
+Repository (Infrastructure)
+    ↓
+Domain Model (Business Logic)
+```
+
+### Layers
+
+| Layer | Responsibility | Location |
+|-------|---|---|
+| **Transport** | HTTP handlers, DTOs, error mapping | `internal/transport/http/` |
+| **Application** | Use cases, orchestration, business workflows | `internal/application/cargo/` |
+| **Domain** | Entities, value objects, business rules, repository interfaces | `internal/domain/` |
+| **Infrastructure** | PostgreSQL repositories, Kafka producer/consumer | `internal/postgres/`, `internal/events/` |
+
+### Key Architectural Decisions
+
+- **Domain-per-entity structure:** Cargo, vessel, and tracking each have isolated domain packages
+- **Repository pattern:** Data access abstraction enables testing and storage flexibility
+- **Event sourcing:** Kafka publishes cargo status changes for downstream systems
+- **Append-only tracking:** Database constraints enforce immutability of tracking history
+- **Context propagation:** Request IDs flow through all layers for distributed tracing
 
 ---
 
 ## Tech Stack
 
-| Category | Technology |
-|---|---|
-| Language | Go 1.21+ |
-| HTTP Framework | Gin |
-| Database | PostgreSQL 15 |
-| Data Access | sqlc (SQL-first) |
-| Migrations | golang-migrate |
-| Event Bus | Kafka (segmentio/kafka-go) |
-| Logging | Zerolog |
-| Testing | Go testing + testify + mockgen + testcontainers |
-| Containers | Docker + docker-compose |
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| **Language** | Go | 1.21+ |
+| **HTTP Framework** | Gin Web Framework | v1.9.0 |
+| **Database** | PostgreSQL | 15-alpine |
+| **Database Driver** | pgx with connection pooling | v5.3.0 |
+| **Event Bus** | Apache Kafka | 7.5.0 |
+| **Kafka Client** | segmentio/kafka-go | v0.4.38 |
+| **Logging** | Zerolog | v1.29.0 |
+| **Testing** | testify, testcontainers | latest |
+| **Containers** | Docker & Docker Compose | latest |
 
 ---
 
-## Folder Structure
+## Prerequisites
 
+- **Docker & Docker Compose** — Required for running PostgreSQL, Kafka, and Zookeeper
+- **Go 1.21+** — For local development and testing
+- **.env configuration** — Environment variables for database and Kafka connection
+
+---
+
+## Getting Started
+
+### 1. Clone and Setup
+
+```bash
+git clone https://github.com/alex-necsoiu/deus-logistics-api
+cd deus-logistics-api
+
+# Create environment file
+cp .env.example .env
 ```
-/deus-logistics-api
-├── cmd/
-│   └── api/
-│       └── main.go                    # Single binary — API + consumer goroutine
-├── internal/
-│   ├── domain/
-│   │   ├── cargo/                     # Cargo bounded context
-│   │   ├── vessel/                    # Vessel bounded context
-│   │   └── tracking/                  # Tracking bounded context
-│   ├── service/                       # Service implementations + unit tests
-│   ├── postgres/                      # sqlc implementations + integration tests
-│   │   ├── migrations/
-│   │   ├── queries/
-│   │   └── sqlc.yaml
-│   ├── events/                        # Kafka producer + consumer
-│   ├── transport/
-│   │   └── http/                      # Gin handlers + DTOs
-│   ├── middleware/                    # Logging, recovery, request_id middleware
-│   └── config/                        # Config struct + ENV loader
-├── pkg/
-│   ├── response/                      # JSON response helpers
-│   └── validator/                     # Input validation
-├── .copilot/
-│   ├── ARCHITECTURE.md                # Single source of truth
-│   ├── system_prompt.md               # Role and behavior
-│   ├── rules.md                       # Workflow patterns
-│   └── config.json                    # Linters and banned patterns
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-├── go.mod
-├── go.sum
-├── README.md (this file)
-├── .env.example
-└── .gitignore
+
+### 2. Start Services
+
+```bash
+docker-compose up --build
+```
+
+This starts:
+- **PostgreSQL 15** on `localhost:5432`
+- **Kafka** on `localhost:9092`
+- **Zookeeper** on `localhost:2181`
+- **API** on `localhost:8080`
+
+### 3. Verify Health
+
+```bash
+# Health check (database connectivity)
+curl http://localhost:8080/health
+
+# Readiness check (ready to serve requests)
+curl http://localhost:8080/ready
 ```
 
 ---
 
-## Master Task List
+## API Endpoints
 
-| # | Task | Owner | Status | Priority | Estimate | Details |
-|---|---|---|---|---|---|---|
-| 1 | Bootstrap repo skeleton | Copilot | done | P0 | 2h | go.mod, .gitignore, Makefile, folder structure, README |
-| 2 | Database schema + sqlc config | Copilot | done | P0 | 3h | schema.sql, sqlc.yaml, queries for all entities |
-| 3 | Migrations (up/down) | Copilot | done | P0 | 2h | 000001_init.up.sql + down.sql via golang-migrate |
-| 4 | Domain layer | Copilot | done | P0 | 3h | Structs, interfaces, sentinel errors (cargo, vessel, tracking) |
-| 5 | Repository implementations | Copilot | done | P0 | 4h | sqlc-backed impls for all repos in /internal/postgres/ |
-| 6 | Service implementations + unit tests | Copilot | done | P0 | 5h | cargo_service.go, vessel_service.go, tracking_service.go (with mocks) |
-| 7 | Kafka producer | Copilot | done | P1 | 2h | EventPublisher implementation in /internal/events/producer.go |
-| 8 | Kafka consumer (in-process) | Copilot | done | P1 | 2h | Consumer goroutine in main, writes to cargo_events table |
-| 9 | Gin router + handlers + DTOs | Copilot | done | P0 | 4h | All endpoints from ARCHITECTURE.md |
-| 10 | Error handling + middleware | Copilot | done | P0 | 3h | Domain error → HTTP status mapping + request logging |
-| 11 | Config + startup sequence | Copilot | done | P0 | 2h | Config struct, main.go startup sequence (13 steps) |
-| 12 | Dockerfile (multi-stage) | Copilot | done | P0 | 1h | Single image for API + consumer |
-| 13 | docker-compose.yml | Copilot | done | P0 | 1h | api + postgres + kafka + zookeeper |
-| 14 | Health + readiness endpoints | Copilot | done | P1 | 1h | /health + /ready |
-| 15 | Integration tests | Copilot | done | P0 | 4h | All repos tested against real Postgres + Kafka |
-| 16 | README final + API docs | Copilot | done | P0 | 2h | Full setup guide + all endpoint examples + request/response samples |
+### Health & Status
+
+```
+GET  /health              # Service health status
+GET  /ready               # Readiness probe (DB connectivity)
+```
+
+### Cargo Management
+
+```
+POST   /api/v1/cargoes                    # Create cargo
+GET    /api/v1/cargoes                    # List all cargo
+GET    /api/v1/cargoes/:id                # Get cargo by ID
+PATCH  /api/v1/cargoes/:id/status         # Update cargo status
+```
+
+### Vessel Management
+
+```
+POST   /api/v1/vessels                    # Create vessel
+GET    /api/v1/vessels                    # List all vessels
+GET    /api/v1/vessels/:id                # Get vessel by ID
+PATCH  /api/v1/vessels/:id/location       # Update vessel location
+```
+
+### Tracking History
+
+```
+POST   /api/v1/cargoes/:id/tracking       # Add tracking entry
+GET    /api/v1/cargoes/:id/tracking       # Get tracking history
+```
+
+---
+
+## Domain Models
+
+### Cargo
+
+Represents a shipment of goods assigned to a vessel.
+
+**Status Lifecycle:**
+- `pending` — Initial state, not yet in transit
+- `in_transit` — Currently being transported
+- `delivered` — Reached destination
+
+**Valid Transitions:**
+- `pending` → `in_transit`
+- `in_transit` → `delivered`
+
+Invalid transitions are rejected at the domain layer with validation errors.
+
+### Vessel
+
+Represents a transport vessel with capacity and location tracking.
+
+### Tracking Entry
+
+Immutable audit trail of cargo location and status changes. Supports append-only operations with database-level constraints to prevent modification or deletion.
 
 ---
 
@@ -135,270 +179,193 @@ See [.copilot/ARCHITECTURE.md](.copilot/ARCHITECTURE.md) for detailed specificat
 ### Running Tests
 
 ```bash
-# All tests
-make test
+# Run full test suite with coverage
+go test ./... -v -cover
 
-# With coverage
-make test-coverage
+# Run specific package tests
+go test ./internal/domain/cargo/ -v
 
-# Specific package
-go test -v ./internal/service/...
+# Generate coverage report
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
 ```
 
-### Database Migrations
+### Build
 
 ```bash
-# Apply pending migrations
-make migrate-up
+go build -o api ./cmd/api
 
-# Rollback last migration
-make migrate-down
+# or with Docker
+docker build -t deus-api .
 ```
 
-### Rebuilding sqlc Generated Code
+### Logging
 
-```bash
-# After updating queries/*.sql
-make sqlc
-```
+All services use **Zerolog** for structured JSON logging. Logs include:
+- Timestamp and caller location
+- Request ID for tracing
+- Structured fields (cargo_id, vessel_id, status, etc.)
+- Error context when failures occur
 
-### Generating Mocks
-
-```bash
-# After updating an interface
-mockgen -source=internal/domain/cargo/repository.go -destination=internal/service/mocks/mock_cargo_repository.go -package=mocks
+Example log output:
+```json
+{
+  "level": "info",
+  "time": "2026-03-29T15:23:45Z",
+  "caller": "internal/postgres/cargo_repo.go:69",
+  "cargo_id": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "cargo inserted into database"
+}
 ```
 
 ---
 
-## REST API Endpoints
+## Project Structure
 
-### Core Endpoints
-
-| Method | Path | Description | Status |
-|---|---|---|---|
-| POST | `/api/v1/cargoes` | Create cargo | ✅ Implemented |
-| GET | `/api/v1/cargoes` | List all cargoes | ✅ Implemented |
-| GET | `/api/v1/cargoes/:id` | Get cargo by ID | ✅ Implemented |
-| PATCH | `/api/v1/cargoes/:id/status` | Update cargo status → Kafka event + tracking | ✅ Implemented |
-| POST | `/api/v1/vessels` | Create vessel | ✅ Implemented |
-| GET | `/api/v1/vessels` | List all vessels | ✅ Implemented |
-| GET | `/api/v1/vessels/:id` | Get vessel by ID | ✅ Implemented |
-| PATCH | `/api/v1/vessels/:id/location` | Update vessel location | ✅ Implemented |
-| POST | `/api/v1/cargoes/:id/tracking` | Add tracking entry (append-only) | ✅ Implemented |
-| GET | `/api/v1/cargoes/:id/tracking` | Get tracking history | ✅ Implemented |
-| GET | `/health` | Liveness check | ✅ Implemented |
-| GET | `/ready` | Readiness check | ✅ Implemented |
-
-### API Examples
-
-#### Create Cargo
-
-```bash
-curl -X POST http://localhost:8080/api/v1/cargoes \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Electronics Shipment",
-    "description": "Fragile electronics for Europe",
-    "weight": 500.0,
-    "vessel_id": "550e8400-e29b-41d4-a716-446655440000"
-  }'
+```
+.
+├── api                              # Built binary
+├── cmd/
+│   └── api/
+│       └── main.go                  # Application entry point
+├── internal/
+│   ├── application/cargo/           # Use cases for cargo management
+│   │   ├── create_cargo.go
+│   │   ├── get_cargo.go
+│   │   ├── list_cargos.go
+│   │   ├── update_status.go
+│   │   └── interfaces.go
+│   ├── config/                      # Configuration management
+│   ├── domain/
+│   │   ├── cargo/                   # Cargo bounded context
+│   │   │   ├── models.go
+│   │   │   ├── errors.go
+│   │   │   ├── events.go
+│   │   │   └── repository.go        # Interface definition
+│   │   ├── vessel/                  # Vessel bounded context
+│   │   └── tracking/                # Tracking bounded context
+│   ├── events/
+│   │   ├── producer.go              # Kafka event publisher
+│   │   └── consumer.go              # Kafka event consumer
+│   ├── postgres/                    # PostgreSQL implementations
+│   │   ├── cargo_repo.go
+│   │   ├── vessel_repo.go
+│   │   ├── tracking_repo.go
+│   │   ├── event_repo.go
+│   │   ├── migrations/              # SQL migrations
+│   │   └── db.go
+│   ├── service/                     # Domain services (vessel, tracking)
+│   ├── transport/http/              # HTTP transport layer
+│   │   ├── cargo_handler.go
+│   │   ├── vessel_handler.go
+│   │   ├── tracking_handler.go
+│   │   ├── router.go
+│   │   └── dto.go
+│   ├── health/                      # Health check reporter
+│   ├── config/                      # Environment configuration
+│   └── validation/                  # Input validators
+├── pkg/
+│   ├── response/                    # JSON response helpers
+│   └── validator/                   # Validation utilities
+├── docs/
+│   └── TEST_RESULTS.md              # Test coverage report
+├── Dockerfile
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+└── README.md
 ```
 
-**Response (201 Created):**
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440001",
-    "name": "Electronics Shipment",
-    "description": "Fragile electronics for Europe",
-    "weight": 500.0,
-    "status": "pending",
-    "vessel_id": "550e8400-e29b-41d4-a716-446655440000",
-    "created_at": "2026-03-24T10:30:00Z",
-    "updated_at": "2026-03-24T10:30:00Z"
-  },
-  "meta": {
-    "request_id": "550e8400-e29b-41d4-a716-446655440002"
-  }
-}
-```
+---
 
-#### Update Cargo Status (triggers Kafka event + tracking)
+## Error Handling
 
-```bash
-curl -X PATCH http://localhost:8080/api/v1/cargoes/550e8400-e29b-41d4-a716-446655440001/status \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "in_transit"
-  }'
-```
+The API returns consistent error responses with HTTP status codes and error details:
 
-**Response (200 OK):**
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440001",
-    "name": "Electronics Shipment",
-    "status": "in_transit",
-    "vessel_id": "550e8400-e29b-41d4-a716-446655440000",
-    "updated_at": "2026-03-24T10:35:00Z"
-  },
-  "meta": {
-    "request_id": "550e8400-e29b-41d4-a716-446655440003"
-  }
-}
-```
-
-Side effects:
-- ✅ Cargo status updated in `cargoes` table
-- ✅ Tracking entry appended to `tracking_entries` table
-- ✅ Kafka event published to `cargo-status-changes` topic
-- ✅ Kafka consumer persists event to `cargo_events` table (append-only)
-
-#### Get Tracking History
-
-```bash
-curl http://localhost:8080/api/v1/cargoes/550e8400-e29b-41d4-a716-446655440001/tracking
-```
-
-**Response (200 OK):**
-```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440004",
-      "cargo_id": "550e8400-e29b-41d4-a716-446655440001",
-      "location": "Unknown",
-      "status": "in_transit",
-      "note": "Status changed from pending to in_transit",
-      "timestamp": "2026-03-24T10:35:00Z"
-    }
-  ],
-  "meta": {
-    "request_id": "550e8400-e29b-41d4-a716-446655440005"
-  }
-}
-```
-
-#### Error Response
-
-```bash
-curl http://localhost:8080/api/v1/cargoes/invalid-id
-```
-
-**Response (400 Bad Request):**
 ```json
 {
   "error": {
     "code": "INVALID_INPUT",
-    "message": "invalid cargo id",
-    "request_id": "550e8400-e29b-41d4-a716-446655440006"
+    "message": "cargo_id is required and must be a valid UUID",
+    "request_id": "550e8400-e29b-41d4-a716-446655440000"
   }
 }
 ```
 
-#### Cargo Not Found
-
-```bash
-curl http://localhost:8080/api/v1/cargoes/550e8400-0000-0000-0000-000000000000
-```
-
-**Response (404 Not Found):**
-```json
-{
-  "error": {
-    "code": "CARGO_NOT_FOUND",
-    "message": "cargo not found",
-    "request_id": "550e8400-e29b-41d4-a716-446655440007"
-  }
-}
-```
-
----
-
-## JSON Response Contract
-
-### Success Response
-
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Electronics",
-    "status": "pending"
-  },
-  "meta": {
-    "request_id": "550e8400-e29b-41d4-a716-446655440001"
-  }
-}
-```
-
-### Error Response
-
-```json
-{
-  "error": {
-    "code": "CARGO_NOT_FOUND",
-    "message": "cargo not found",
-    "request_id": "550e8400-e29b-41d4-a716-446655440001"
-  }
-}
-```
-
-### HTTP Status Codes
-
-- `200 OK` — Successful GET
-- `201 Created` — Successful POST
-- `400 Bad Request` — Invalid input / bad status
-- `404 Not Found` — Cargo or vessel not found
-- `422 Unprocessable Entity` — Business rule violation (e.g., capacity exceeded)
-- `500 Internal Server Error` — Unexpected server error
+**Common Error Codes:**
+- `INVALID_INPUT` — Validation failure (HTTP 400)
+- `NOT_FOUND` — Resource does not exist (HTTP 404)
+- `CONFLICT` — Invalid state transition (HTTP 409)
+- `INTERNAL_ERROR` — Unexpected server error (HTTP 500)
 
 ---
 
 ## Configuration
 
-Configuration is via environment variables. Copy `.env.example` to `.env`:
+Environment variables via `.env`:
 
-```bash
-cp .env.example .env
-```
+```env
+# Database
+DB_HOST=postgres
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=password
+DB_NAME=deus_logistics
+DB_SSLMODE=disable
 
-Then edit `.env` with your values. Required variables:
-- `DB_HOST` — PostgreSQL host
-- `DB_PORT` — PostgreSQL port
-- `DB_USER` — PostgreSQL user
-- `DB_PASSWORD` — PostgreSQL password
-- `DB_NAME` — PostgreSQL database name
-- `KAFKA_BROKER` — Kafka broker address
-- `SERVER_PORT` — API port (default: 8080)
+# Server
+SERVER_PORT=8080
+SERVER_ENV=development
 
----
-
-## Named Branches & Commits
-
-Each task uses conventional commits:
-
-```
-feature/<task-name>
-feat: <description>
-fix: <description>
-test: <description>
-chore: <description>
-ci: <description>
+# Kafka
+KAFKA_BROKERS=kafka:9092
+KAFKA_TOPIC_EVENTS=cargo.events
 ```
 
 ---
 
-## Rules & Constraints
+## Testing
 
-See [.copilot/ARCHITECTURE.md](.copilot/ARCHITECTURE.md), [.copilot/system_prompt.md](.copilot/system_prompt.md), and [.copilot/rules.md](.copilot/rules.md) for:
-- Complete architecture specification
-- Mandatory patterns (sqlc, Zerolog, Clean Architecture)
-- Banned patterns (panic, fmt.Println, GORM, raw SQL)
-- TDD workflow
-- Coding standards
+- **80+ unit tests** across domain, application, and service layers
+- **Integration tests** using testcontainers for PostgreSQL
+- **Test coverage:** 35%+ overall, with core packages at 100%
+  - Domain models: 100%
+  - Errors: 100%
+  - Validation: 100%
+  - Application use cases: 69.5%
+  - Services: 63.0%
+
+---
+
+## Performance Characteristics
+
+- **Database Pooling:** pgxpool with connection reuse
+- **Request Tracing:** Context-based request ID propagation
+- **Structured Logging:** Zero-allocation JSON marshaling (Zerolog)
+- **Event Publishing:** Fire-and-forget Kafka pattern for non-blocking operations
+
+---
+
+## Production Readiness
+
+- ✅ Clean Architecture with clear separation of concerns
+- ✅ Comprehensive error handling and validation
+- ✅ Structured logging for observability
+- ✅ Request ID tracing for distributed debugging
+- ✅ Database health checks and migrations
+- ✅ Docker containerization for consistency
+- ✅ 80+ tests with high coverage in critical paths
+- ✅ Graceful shutdown with context cancellation
+
+---
+
+## Contributing
+
+1. Follow the architecture layers — don't cross boundaries
+2. Write tests for new features (domain logic, use cases)
+3. Use Zerolog for logging, never `fmt.Println`
+4. Keep handler logic thin — push business logic to domain
+5. Document domain constraints in model comments
 
 ---
 
@@ -408,20 +375,8 @@ MIT License
 
 Copyright (c) 2025 Alex Necsoiu
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+---
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Authors
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+- **Alex Necsoiu** — Implementation
