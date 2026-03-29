@@ -1,73 +1,113 @@
 {
-  "version": "1",
-
+  "version": "3",
   "extends": [
-    "./system_prompt.md"
+    "./.copilot/system_prompt.md",
+    "./.copilot/ARCHITECTURE.md"
   ],
-
   "behavior": {
     "linters": [
-      "must follow ARCHITECTURE.md exactly — no deviation",
-      "must follow .copilot/system_prompt.md",
-      "must ask clarifying questions before assuming",
-      "never change architecture or stack unless explicitly approved",
-
-      "must write tests FIRST before production code (TDD)",
-      "use table-driven tests and mockgen",
-      "must include GoDoc comments for every function",
-      "must document error cases, security implications, and tracing",
-
-      "must show full file paths for every file created/modified",
-      "must provide branch + conventional commit messages",
-      "must update README task table when completing steps",
-
-      "domain code MUST NOT import transport or infrastructure packages",
-      "no business logic in handlers",
-      "sqlc is the ONLY data access layer — no raw SQL in code",
-      "must never expose sqlc structs in API responses",
-      "Gin ONLY for HTTP, gRPC ONLY for internal RPC",
-      "Argon2id ONLY for password hashing",
-      "Vault placeholders for all secrets — no real credentials",
-      "must generate Makefile targets, migrations, OTEL hooks"
+      "must follow ARCHITECTURE.md exactly — no deviation without explicit approval",
+      "must follow .copilot/system_prompt.md at all times",
+      "must ask ONE clarifying question before assuming anything not in the architecture",
+      "never change the tech stack (Go, Gin, sqlc, PostgreSQL, Kafka, Zerolog, golang-migrate)",
+      "must write tests FIRST before production code (TDD — non-negotiable)",
+      "use table-driven tests with Given/When/Then comments",
+      "use mockgen for all interface mocks",
+      "must include GoDoc comments for EVERY function — no exceptions",
+      "must document: purpose, inputs, outputs, errors, side effects",
+      "must show full repo-relative file paths for every file created or modified",
+      "must provide branch name + conventional commit message for every change",
+      "must update README task table when a task is completed",
+      "must provide run commands + expected output for every change",
+      "domain code MUST NOT import transport, postgres, or events packages",
+      "no business logic in handlers — handlers only: bind → validate → call service → respond",
+      "sqlc is the ONLY data access layer — no raw SQL strings in Go code",
+      "must never expose sqlc-generated structs in API responses — always map to domain structs or DTOs",
+      "Gin ONLY for HTTP transport",
+      "Zerolog ONLY for logging",
+      "golang-migrate ONLY for DB migrations",
+      "Kafka (segmentio/kafka-go) for async events",
+      "tracking_entries are APPEND-ONLY — never update or delete",
+      "cargo_events are APPEND-ONLY — written by Kafka consumer",
+      "UUID for all primary keys — use github.com/google/uuid",
+      "always propagate context from request — never use context.TODO() in handlers",
+      "SINGLE BINARY with in-process Kafka consumer — consumer runs as goroutine in main",
+      "must generate Makefile with all required targets",
+      "must include Dockerfile (multi-stage)",
+      "docker-compose must include: api, postgres, kafka, zookeeper",
+      "API must be accessible at http://localhost:8080"
     ],
-
     "mustUsePatterns": [
       "sqlc generate",
-      "go test",
+      "go test ./...",
       "mockgen",
-      "Argon2id",
-      "OpenTelemetry",
-      "Gin",
-      "gRPC"
+      "zerolog",
+      "golang-migrate",
+      "uuid.New()",
+      "pgxpool.New()",
+      "c.ShouldBindJSON",
+      "errors.Is()",
+      "fmt.Errorf(\"%w\")",
+      "context.Context as first parameter",
+      "segmentio/kafka-go for Kafka client"
     ],
-
     "bannedPatterns": [
-      "db.Query(",
-      "db.Exec(",
       "panic(",
       "fmt.Println(",
+      "log.Print(",
+      "db.Query(",
+      "db.Exec(",
       "bcrypt",
       "md5",
       "sha1",
-      "password =",
-      ":= context.TODO()"
+      "context.TODO()",
+      "gorm.io",
+      "\"database/sql\"",
+      "context.Background()"
     ]
   },
-
   "patchRules": {
     "require": [
-      "branch name for each change",
-      "conventional commit message",
-      "file map with full paths",
-      "tests included BEFORE code",
-      "README task list update when tasks complete",
-      "commands to run and expected output"
+      "branch name for each change (feature/<short-name>)",
+      "conventional commit message (feat:|fix:|test:|chore:|ci:)",
+      "File Map section listing ALL touched files with full paths",
+      "tests written and shown BEFORE implementation code",
+      "README task table updated with new status",
+      "shell commands to run the change locally",
+      "expected output so result can be verified"
     ]
   },
-
+  "taskBoard": {
+    "columns": ["#", "Task", "Owner", "Status", "Priority", "Estimate", "Details"],
+    "statusValues": ["todo", "in-progress", "blocked", "review", "done"],
+    "priorityValues": ["P0", "P1", "P2"],
+    "location": "README.md"
+  },
   "prompts": {
-    "initialMessage": "Load and follow ARCHITECTURE.md and .copilot/system_prompt.md. Confirm by listing 10 mandatory rules.",
-    "resetCommand": "Reset. Re-read ARCHITECTURE.md and .copilot/system_prompt.md and restate the 10 rules before continuing.",
-    "onDeviation": "This violates Pandora architecture. Re-read ARCHITECTURE.md and .copilot/system_prompt.md and regenerate correctly."
+    "initialMessage": "Load ARCHITECTURE.md and .copilot/system_prompt.md. Confirm by listing 10 mandatory rules you will enforce. Then ask which task to begin.",
+    "resetCommand": "Reset. Re-read ARCHITECTURE.md and .copilot/system_prompt.md. Restate the 10 rules before continuing.",
+    "onDeviation": "This violates the DEUS Logistics API architecture. Re-read ARCHITECTURE.md and .copilot/system_prompt.md and regenerate correctly.",
+    "onMissingTest": "Tests must come FIRST. Show the test file before any implementation code.",
+    "onMissingPath": "Every file must have a full repo-relative path shown before the code block.",
+    "onMissingGoDoc": "Every function must have GoDoc comments. Add them before marking this task complete."
+  },
+  "architecture": {
+    "serviceType": "single-binary",
+    "layers": ["domain", "service", "repository", "postgres", "transport/http", "events", "config", "middleware"],
+    "importRules": {
+      "domain": "no imports from transport, postgres, events, or service",
+      "service": "imports domain only",
+      "repository": "imports domain only (interface definitions)",
+      "postgres": "imports domain + repository",
+      "transport/http": "imports domain + service interfaces",
+      "events": "imports domain only"
+    },
+    "entities": ["Cargo", "Vessel", "TrackingEntry", "CargoEvent"],
+    "cargoStatuses": ["pending", "in_transit", "delivered"],
+    "trackingPolicy": "append-only — never update or delete tracking_entries",
+    "eventTopic": "cargo-status-changes",
+    "apiPrefix": "/api/v1",
+    "apiPort": 8080,
+    "consumerInProcess": true
   }
 }
