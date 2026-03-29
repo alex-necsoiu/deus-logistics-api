@@ -2,16 +2,22 @@ package http
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/alex-necsoiu/deus-logistics-api/internal/validation"
 )
 
 // --- Request DTOs ---
 
 // CreateCargoRequest is the request body for creating a cargo.
+// All fields are required except Description.
+// Constraints:
+//   - Name: non-empty string
+//   - Weight: positive float64 (greater than 0)
+//   - VesselID: valid UUID (required)
+//   - Description: optional, can be empty
 type CreateCargoRequest struct {
 	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description"`
@@ -19,97 +25,97 @@ type CreateCargoRequest struct {
 	VesselID    uuid.UUID `json:"vessel_id" binding:"required"`
 }
 
-// Validate performs business validation on the cargo creation request.
+// Validate performs strict business validation on the cargo creation request.
+// Validates request constraints BEFORE use case execution.
 // Returns nil if all fields are valid, otherwise returns a descriptive error.
 func (r *CreateCargoRequest) Validate() error {
-	if strings.TrimSpace(r.Name) == "" {
-		return errors.New("name cannot be empty")
+	if err := validation.ValidateRequiredString("name", r.Name); err != nil {
+		return err
 	}
-	if r.Weight <= 0 {
-		return errors.New("weight must be greater than 0")
+	if err := validation.ValidatePositiveFloat("weight", r.Weight); err != nil {
+		return err
+	}
+	if r.VesselID == uuid.Nil {
+		return errors.New("vessel_id is required and must be a valid UUID")
 	}
 	return nil
 }
 
 // UpdateCargoStatusRequest is the request body for updating cargo status.
+// Status must be one of: pending, in_transit, delivered
 type UpdateCargoStatusRequest struct {
 	Status string `json:"status" binding:"required"`
 }
 
-// Validate performs business validation on the status update.
+// Validate performs strict business validation on the status update.
+// Validates that status is a valid cargo state BEFORE use case execution.
 // Returns nil if status is valid, otherwise returns a descriptive error.
 func (r *UpdateCargoStatusRequest) Validate() error {
-	validStatuses := map[string]bool{
-		"pending":    true,
-		"in_transit": true,
-		"delivered":  true,
-	}
-	if !validStatuses[r.Status] {
-		return fmt.Errorf("invalid status: %s, must be one of: pending, in_transit, delivered", r.Status)
-	}
-	return nil
+	return validation.ValidateCargoStatus(r.Status)
 }
 
 // CreateVesselRequest is the request body for creating a vessel.
+// All fields are required.
+// Constraints:
+//   - Name: non-empty string
+//   - Capacity: positive float64, max 1000 tons (fleet maximum)
+//   - CurrentLocation: non-empty string
 type CreateVesselRequest struct {
 	Name            string  `json:"name" binding:"required"`
 	Capacity        float64 `json:"capacity" binding:"required,gt=0"`
 	CurrentLocation string  `json:"current_location" binding:"required"`
 }
 
-// Validate performs business validation on the vessel creation request.
+// Validate performs strict business validation on the vessel creation request.
+// Validates all constraints BEFORE use case execution.
 // Returns nil if all fields are valid, otherwise returns a descriptive error.
 func (r *CreateVesselRequest) Validate() error {
-	if strings.TrimSpace(r.Name) == "" {
-		return errors.New("name cannot be empty")
+	if err := validation.ValidateRequiredString("name", r.Name); err != nil {
+		return err
 	}
-	if r.Capacity <= 0 {
-		return errors.New("capacity must be greater than 0")
+	if err := validation.ValidateVesselCapacity(r.Capacity); err != nil {
+		return err
 	}
-	if r.Capacity > 1000 {
-		return errors.New("capacity cannot exceed 1000 tons (fleet maximum)")
-	}
-	if strings.TrimSpace(r.CurrentLocation) == "" {
-		return errors.New("current location cannot be empty")
+	if err := validation.ValidateRequiredString("current_location", r.CurrentLocation); err != nil {
+		return err
 	}
 	return nil
 }
 
 // UpdateVesselLocationRequest is the request body for updating vessel location.
+// Location field is required and cannot be empty.
 type UpdateVesselLocationRequest struct {
 	CurrentLocation string `json:"current_location" binding:"required"`
 }
 
-// Validate performs business validation on the location update.
+// Validate performs strict business validation on the location update.
+// Validates that location is non-empty BEFORE use case execution.
 // Returns nil if location is valid, otherwise returns a descriptive error.
 func (r *UpdateVesselLocationRequest) Validate() error {
-	if strings.TrimSpace(r.CurrentLocation) == "" {
-		return errors.New("current location cannot be empty")
-	}
-	return nil
+	return validation.ValidateRequiredString("current_location", r.CurrentLocation)
 }
 
 // AddTrackingRequest is the request body for adding a tracking entry.
+// Location and Status are required.
+// Constraints:
+//   - Location: non-empty string
+//   - Status: one of pending, in_transit, delivered
+//   - Note: optional
 type AddTrackingRequest struct {
 	Location string `json:"location" binding:"required"`
 	Status   string `json:"status" binding:"required"`
 	Note     string `json:"note"`
 }
 
-// Validate performs business validation on the tracking entry request.
+// Validate performs strict business validation on the tracking entry request.
+// Validates all constraints BEFORE use case execution.
 // Returns nil if all fields are valid, otherwise returns a descriptive error.
 func (r *AddTrackingRequest) Validate() error {
-	if strings.TrimSpace(r.Location) == "" {
-		return errors.New("location cannot be empty")
+	if err := validation.ValidateRequiredString("location", r.Location); err != nil {
+		return err
 	}
-
-	validStatuses := map[string]bool{
-		"pending":    true,
-		"in_transit": true,
-		"delivered":  true,
-	}
-	if !validStatuses[r.Status] {
-		return fmt.Errorf("invalid status: %s, must be one of: pending, in_transit, delivered", r.Status)
+	if err := validation.ValidateCargoStatus(r.Status); err != nil {
+		return err
 	}
 	return nil
 }
