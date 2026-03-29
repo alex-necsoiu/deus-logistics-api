@@ -252,15 +252,3 @@ func (h *CargoHandler) UpdateCargoStatus(c *gin.Context) {
 		},
 	})
 }
-
-// mapErrorToStatus maps domain errors to HTTP status codes using error comparison.
-// DEPRECATED: Use httperrors.MapErrorToHTTPStatus instead (central error mapping).
-func mapErrorToStatus(err error) int {
-	return httperrors.MapErrorToHTTPStatus(err)
-}
-
-// mapErrorToCode maps domain errors to error codes using error comparison.
-// DEPRECATED: Use httperrors.MapErrorToErrorCode instead (central error mapping).
-func mapErrorToCode(err error) string {
-	return string(httperrors.MapErrorToErrorCode(err))
-}
