@@ -27,13 +27,13 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	_ "github.com/alex-necsoiu/deus-logistics-api/docs"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/application/cargo"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/config"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/events"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/postgres"
 	"github.com/alex-necsoiu/deus-logistics-api/internal/service"
 	transporthttp "github.com/alex-necsoiu/deus-logistics-api/internal/transport/http"
-	_ "github.com/alex-necsoiu/deus-logistics-api/docs"
 )
 
 func main() {
